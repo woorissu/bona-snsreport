@@ -464,7 +464,7 @@
       const ctx = document.getElementById('platformChart');
       const labels = ['블로그','인스타','페북'];
       const data = [counts.blog||0, counts.instagram||0, counts.facebook||0];
-      const bg = ['var(--blog-color)','var(--instagram-color)','var(--facebook-color)'];
+      const bg = [COLORS['블로그'], COLORS['인스타'], COLORS['페북']]; // ✅ 플랫폼별 색상 반영
       if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
         type: 'bar',
@@ -472,6 +472,7 @@
         options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
       });
     }
+
 
     // ===== 필터/탭/테마 =====
     function updateFilterOptions(data) {

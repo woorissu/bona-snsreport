@@ -3,25 +3,30 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>월간 SNS콘텐츠 리포트</title>
+  <title>보나팩토리 월간 SNS콘텐츠 리포트 - 넥스트피닉스 </title>
+
+  <!-- Chart.js & Papa Parse (CSV 안전 파싱) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <style>
-    body {font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif; margin:24px; color:#111;}
-    header {display:flex; flex-wrap:wrap; gap:12px; align-items:baseline;}
-    h1 {margin:0; font-size: clamp(18px, 3.4vw, 26px);}
-    .pill {border:1px solid #ddd; border-radius:999px; padding:6px 12px; font-size:14px;}
-    .grid {display:grid; gap:20px; grid-template-columns: 1fr; max-width:980px; margin: 16px auto;}
-    .card {border:1px solid #eee; border-radius:12px; padding:16px; background:#fff;}
-    .list {display:flex; flex-direction:column; gap:10px;}
-    .item a {text-decoration:none; color:#0b6bff;}
-    .meta {font-size:12px; color:#666;}
-    .week-title {font-weight:700; margin:16px 0 6px;}
-    @media (min-width: 900px){ .grid{grid-template-columns: 1.2fr .8fr;} }
+    :root { color-scheme: light; }
+    body { font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; margin:24px; color:#111; background:#fafafa; }
+    header { display:flex; flex-wrap:wrap; gap:12px; align-items:baseline; }
+    h1 { margin:0; font-size: clamp(18px, 3.4vw, 26px); }
+    .pill { border:1px solid #ddd; border-radius:999px; padding:6px 12px; font-size:14px; background:#fff; }
+    .grid { display:grid; gap:20px; grid-template-columns: 1fr; max-width:980px; margin:16px auto; }
+    .card { border:1px solid #eee; border-radius:12px; padding:16px; background:#fff; }
+    .list { display:flex; flex-direction:column; gap:10px; }
+    .item a { text-decoration:none; color:#0b6bff; }
+    .meta { font-size:12px; color:#666; }
+    .week-title { font-weight:700; margin:16px 0 6px; }
+    @media (min-width: 900px){ .grid{ grid-template-columns: 1.2fr .8fr; } }
   </style>
 </head>
 <body>
   <header>
-    <h1>월간 SNS콘텐츠 리포트</h1>
+    <h1> SNS 컨텐츠 대행 리포트 from 넥스트피닉스</h1>
     <span id="month" class="pill"></span>
     <span id="totals" class="pill"></span>
   </header>
@@ -38,6 +43,115 @@
     </section>
   </div>
 
-  <script src="./main.js"></script>
+  <script>
+    // === 1) 구글시트 CSV URL (웹에 게시 링크) ===
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v/pub?gid=0&single=true&output=csv';
+
+    // === 2) CSV 가져와서 안전 파싱 (헤더: 업로드날짜, 플랫폼, 주제, 링크) ===
+    async function fetchRows() {
+      const url = CSV_URL + `&cachebust=${Date.now()}`; // 기존에 ?가 있으므로 &로 연결
+      const res = await fetch(url, { cache: 'no-store' });
+      const text = await res.text();
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+      return parsed.data
+        .map(r => ({
+          date: (r['업로드날짜'] || '').trim(),
+          platform: (r['플랫폼'] || '').trim(), // '블로그'/'인스타'/'페북'
+          title: (r['주제'] || '').trim(),
+          url: (r['링크'] || '').trim()
+        }))
+        .filter(x => x.title && x.url && x.date);
+    }
+
+    // === 3) 주차 계산(월 기준 1주차~) ===
+    function weekOf(dateStr){
+      const d = new Date(dateStr);
+      const first = new Date(d.getFullYear(), d.getMonth(), 1);
+      const diff = Math.floor((d - first)/(1000*60*60*24));
+      return Math.floor(diff/7) + 1;
+    }
+
+    function groupByWeek(items){
+      const map = {};
+      items.forEach(it=>{
+        const w = weekOf(it.date);
+        (map[w] ||= []).push(it);
+      });
+      return Object.entries(map).sort((a,b)=>a[0]-b[0]);
+    }
+
+    // === 4) 목록 렌더 ===
+    function renderList(grouped){
+      const root = document.getElementById('weeks');
+      root.innerHTML = '';
+      grouped.forEach(([week, arr])=>{
+        const title = document.createElement('div');
+        title.className = 'week-title';
+        title.textContent = `${week}주차 (${arr.length}건)`;
+        root.appendChild(title);
+
+        arr.sort((a,b)=>a.date.localeCompare(b.date));
+        arr.forEach(it=>{
+          const row = document.createElement('div');
+          row.className = 'item';
+          row.innerHTML = `
+            <div><a href="${it.url}" target="_blank" rel="noopener">${it.title}</a></div>
+            <div class="meta">${it.date} · ${it.platform}</div>
+          `;
+          root.appendChild(row);
+        });
+      });
+    }
+
+    // === 5) 상단 배지(총합/월) 계산 ===
+    function renderTotals(items){
+      const t = document.getElementById('totals');
+      const counts = items.reduce((acc, it)=>{
+        const key = (it.platform || '').trim(); // '블로그'/'인스타'/'페북'
+        acc[key] = (acc[key]||0)+1;
+        return acc;
+      }, {});
+      const blog = counts['블로그']||0, insta = counts['인스타']||0, fb = counts['페북']||0;
+      t.textContent = `블로그 ${blog} · 인스타 ${insta} · 페북 ${fb}`;
+
+      // month 표시: 가장 최근 데이터 기준(안전)
+      if(items.length){
+        const m = items
+          .map(x=> (x.date||'').slice(0,7))
+          .filter(Boolean)
+          .sort()
+          .pop();
+        document.getElementById('month').textContent = m || '';
+      }
+      // 차트용은 영문 키로 반환
+      return { blog, instagram: insta, facebook: fb };
+    }
+
+    // === 6) 차트 렌더 (라벨은 한글, 데이터는 영문 키) ===
+    function renderChart(counts){
+      const ctx = document.getElementById('platformChart');
+      const labels = ['블로그','인스타','페북']; // 화면 라벨
+      const data = [counts.blog||0, counts.instagram||0, counts.facebook||0]; // 데이터
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label:'게시물 수', data }] },
+        options: {
+          responsive: true,
+          plugins:{ legend:{ display:false } },
+          scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }
+        }
+      });
+    }
+
+    // === 7) 실행 ===
+    (async ()=>{
+      const items = await fetchRows();
+      const grouped = groupByWeek(items);
+      renderList(grouped);
+      const counts = renderTotals(items);
+      renderChart(counts);
+    })();
+  </script>
 </body>
 </html>

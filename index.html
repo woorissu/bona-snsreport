@@ -221,8 +221,8 @@
 
         <!-- ✅ 추가: 안내 문구 -->
         <p class="notice">
-          ※ <b>보나팩토리</b> 3회/주 이미지 콘텐츠 제작(페이스북&인스타 미러링) & 브랜딩 블로그 10회/월 진행중 (상위노출 보장X) <br>
-          문의사항은 넥스트피닉스 제작팀 실장 혹은 업체 담당자 임명선 대표님에게 연락주세요 
+          ※ <b>보나팩토리</b> 3회/주 이미지 콘텐츠 제작(페이스북&인스타 미러링) + 브랜딩 블로그 10회/월 진행중 (상위노출 보장X) <br>
+          ※ 문의사항은 넥스트피닉스 제작팀 실장 혹은 업체 담당자 임명선 대표님에게 연락주세요 
         </p>
 
         <div class="header-badges">
@@ -280,12 +280,13 @@
         <canvas id="platformChart" height="240"></canvas>
 
         <!-- ✅ 추가: 플랫폼 바로가기 버튼 -->
+        <!-- 그래프 아래 바로가기 버튼 -->
         <div class="link-buttons">
-          <!-- TODO: 아래 href를 실제 고객 채널로 바꿔주세요 -->
-          <a class="btn-link btn-blog" href="https://blog.naver.com/bonafactory_join" target="_blank" rel="noopener">📝 블로그 바로가기</a>
-          <a class="btn-link btn-instagram" href="https://www.instagram.com/bonafactory5584/" target="_blank" rel="noopener">📷 인스타 바로가기</a>
-          <a class="btn-link btn-facebook" href="https://www.facebook.com/profile.php?id=61579399016495" target="_blank" rel="noopener">👥 페이스북 바로가기</a>
+          <a id="btnBlog" class="btn-link btn-blog" href="#" target="_blank" rel="noopener">📝 블로그 바로가기</a>
+          <a id="btnInsta" class="btn-link btn-instagram" href="#" target="_blank" rel="noopener">📷 인스타 바로가기</a>
+          <a id="btnFb"   class="btn-link btn-facebook" href="#" target="_blank" rel="noopener">👥 페이스북 바로가기</a>
         </div>
+
       </section>
     </div>
   </div>
@@ -301,6 +302,7 @@
     let currentPlatform = 'all';
     let currentViewType = 'week';
     let chartInstance = null;
+    let QUICK_LINKS = { blog:'#', instagram:'#', facebook:'#' };
 
     // ===== 유틸 =====
     function weekOf(dateStr){
@@ -355,7 +357,32 @@
         }))
         .filter(x => x.title && x.url && x.date);
     }
+    
+  // CSV E열(0-index 4) 2~4행(0-index 1..3)에서 바로가기 링크를 읽는다.
+async function fetchQuickLinks() {
+  const url = CSV_URL + `&cachebust=${Date.now()}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  const text = await res.text();
 
+  // 헤더 없이 파싱해서 행/열로 직접 접근
+  const raw = Papa.parse(text, { header: false, skipEmptyLines: true }).data;
+
+  const blog   = (raw[1] && raw[1][4]) ? String(raw[1][4]).trim() : '#'; // E2
+  const insta  = (raw[2] && raw[2][4]) ? String(raw[2][4]).trim() : '#'; // E3
+  const fb     = (raw[3] && raw[3][4]) ? String(raw[3][4]).trim() : '#'; // E4
+
+  QUICK_LINKS = { blog, instagram: insta, facebook: fb };
+
+  // 버튼 href 주입
+  const btnBlog = document.getElementById('btnBlog');
+  const btnInsta = document.getElementById('btnInsta');
+  const btnFb = document.getElementById('btnFb');
+  if (btnBlog) btnBlog.href = QUICK_LINKS.blog || '#';
+  if (btnInsta) btnInsta.href = QUICK_LINKS.instagram || '#';
+  if (btnFb) btnFb.href = QUICK_LINKS.facebook || '#';
+}
+
+    
     // ===== 렌더링 =====
     function renderList(grouped){
       const root = document.getElementById('weeks');
@@ -594,9 +621,12 @@
     (async ()=>{
       bindUI();
       allData = await fetchRows();
+      await fetchQuickLinks();          // 🔹 CSV E2~E4 링크 읽어와 버튼에 주입
       updateFilterOptions(allData);
       applyFilters(); // 초기 렌더
     })();
+
+    
   </script>
 </body>
 </html>

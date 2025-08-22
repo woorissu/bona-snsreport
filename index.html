@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -53,11 +52,7 @@
       color-scheme: dark;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
@@ -67,11 +62,7 @@
       transition: all 0.2s ease;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
 
     header {
       background: var(--card-bg);
@@ -87,24 +78,11 @@
       gap: 16px;
     }
 
-    .header-left {
-      flex: 1;
-      min-width: 300px;
-    }
+    .header-left { flex: 1; min-width: 300px; }
 
-    h1 {
-      font-size: clamp(20px, 4vw, 28px);
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
+    h1 { font-size: clamp(20px, 4vw, 28px); font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
 
-    .header-badges {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
+    .header-badges { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
 
     .pill {
       background: var(--bg-tertiary);
@@ -130,11 +108,7 @@
       font-weight: 500;
       color: var(--text-primary);
     }
-
-    .theme-toggle:hover {
-      background: var(--text-primary);
-      color: var(--card-bg);
-    }
+    .theme-toggle:hover { background: var(--text-primary); color: var(--card-bg); }
 
     /* 필터 및 탭 */
     .controls {
@@ -146,26 +120,10 @@
       box-shadow: var(--shadow);
     }
 
-    .filter-row {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
+    .filter-row { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
 
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .filter-group label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      min-width: 60px;
-    }
+    .filter-group { display: flex; align-items: center; gap: 8px; }
+    .filter-group label { font-size: 14px; font-weight: 500; color: var(--text-secondary); min-width: 60px; }
 
     .filter-select {
       background: var(--bg-secondary);
@@ -177,244 +135,65 @@
       min-width: 120px;
     }
 
-    .tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--bg-secondary);
-      border-radius: 8px;
-      padding: 4px;
-    }
-
+    .tabs { display: flex; gap: 4px; background: var(--bg-secondary); border-radius: 8px; padding: 4px; }
     .tab {
-      background: transparent;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      flex: 1;
-      text-align: center;
+      background: transparent; border: none; border-radius: 6px; padding: 8px 16px;
+      font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer;
+      transition: all 0.2s ease; flex: 1; text-align: center;
     }
+    .tab.active { background: var(--card-bg); color: var(--text-primary); box-shadow: var(--shadow); }
+    .tab.blog.active { color: var(--blog-color); border: 1px solid var(--blog-color); }
+    .tab.instagram.active { color: var(--instagram-color); border: 1px solid var(--instagram-color); }
+    .tab.facebook.active { color: var(--facebook-color); border: 1px solid var(--facebook-color); }
 
-    .tab.active {
-      background: var(--card-bg);
-      color: var(--text-primary);
-      box-shadow: var(--shadow);
-    }
+    .grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
+    .card { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); transition: all 0.2s ease; }
+    .card:hover { box-shadow: var(--shadow-lg); }
+    .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
 
-    .tab.blog.active {
-      color: var(--blog-color);
-      border: 1px solid var(--blog-color);
-    }
-
-    .tab.instagram.active {
-      color: var(--instagram-color);
-      border: 1px solid var(--instagram-color);
-    }
-
-    .tab.facebook.active {
-      color: var(--facebook-color);
-      border: 1px solid var(--facebook-color);
-    }
-
-    .grid {
-      display: grid;
-      gap: 24px;
-      grid-template-columns: 1fr;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-      transition: all 0.2s ease;
-    }
-
-    .card:hover {
-      box-shadow: var(--shadow-lg);
-    }
-
-    .card h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
+    .list { display: flex; flex-direction: column; gap: 8px; }
     .week-title {
-      font-weight: 600;
-      font-size: 16px;
-      margin: 16px 0 8px;
-      padding: 12px 16px;
-      background: var(--bg-secondary);
-      border-radius: 8px;
-      border-left: 3px solid var(--text-tertiary);
-      color: var(--text-primary);
+      font-weight: 600; font-size: 16px; margin: 16px 0 8px; padding: 12px 16px;
+      background: var(--bg-secondary); border-radius: 8px; border-left: 3px solid var(--text-tertiary); color: var(--text-primary);
     }
 
-    .platform-group {
-      margin-bottom: 20px;
-    }
+    .platform-group { margin-bottom: 20px; }
+    .platform-header { font-weight: 600; font-size: 16px; margin-bottom: 12px; padding: 12px 16px; border-radius: 8px; color: white; display: flex; align-items: center; gap: 8px; }
+    .platform-header.blog { background: var(--blog-color); }
+    .platform-header.instagram { background: var(--instagram-color); }
+    .platform-header.facebook { background: var(--facebook-color); }
 
-    .platform-header {
-      font-weight: 600;
-      font-size: 16px;
-      margin-bottom: 12px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      color: white;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .item { padding: 12px 16px; border-radius: 8px; background: var(--bg-secondary); border: 1px solid var(--border-light); transition: all 0.2s ease; margin-left: 20px; }
+    .item:hover { transform: translateX(4px); box-shadow: var(--shadow); }
+    .item a { text-decoration: none; color: var(--text-primary); font-weight: 500; transition: color 0.2s ease; }
+    .item a:hover { text-decoration: underline; }
+    .item.blog a:hover { color: var(--blog-color); }
+    .item.instagram a:hover { color: var(--instagram-color); }
+    .item.facebook a:hover { color: var(--facebook-color); }
 
-    .platform-header.blog {
-      background: var(--blog-color);
-    }
+    .meta { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+    .platform-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 
-    .platform-header.instagram {
-      background: var(--instagram-color);
-    }
+    #platformChart { border-radius: 8px; }
 
-    .platform-header.facebook {
-      background: var(--facebook-color);
-    }
-
-    .item {
-      padding: 12px 16px;
-      border-radius: 8px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-light);
-      transition: all 0.2s ease;
-      margin-left: 20px;
-    }
-
-    .item:hover {
-      transform: translateX(4px);
-      box-shadow: var(--shadow);
-    }
-
-    .item a {
-      text-decoration: none;
-      color: var(--text-primary);
-      font-weight: 500;
-      transition: color 0.2s ease;
-    }
-
-    .item a:hover {
-      text-decoration: underline;
-    }
-
-    .item.blog a:hover {
-      color: var(--blog-color);
-    }
-
-    .item.instagram a:hover {
-      color: var(--instagram-color);
-    }
-
-    .item.facebook a:hover {
-      color: var(--facebook-color);
-    }
-
-    .meta {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      margin-top: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .platform-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 6px;
-    }
-
-    #platformChart {
-      border-radius: 8px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: var(--text-tertiary);
-    }
+    .empty-state { text-align: center; padding: 40px; color: var(--text-tertiary); }
 
     .stats-summary {
-      background: var(--bg-secondary);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-around;
-      text-align: center;
+      background: var(--bg-secondary); border-radius: 8px; padding: 16px; margin-bottom: 20px;
+      display: flex; justify-content: space-around; text-align: center;
     }
-
-    .stat-item {
-      flex: 1;
-    }
-
-    .stat-number {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .stat-item { flex: 1; }
+    .stat-number { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+    .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Responsive */
-    @media (min-width: 1024px) {
-      .grid {
-        grid-template-columns: 1.5fr 1fr;
-      }
-    }
-
+    @media (min-width: 1024px) { .grid { grid-template-columns: 1.5fr 1fr; } }
     @media (max-width: 768px) {
-      .container {
-        padding: 16px;
-      }
-      
-      header {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-      }
-      
-      .filter-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      
-      .tabs {
-        flex-direction: column;
-      }
-      
-      .item:hover {
-        transform: none;
-      }
+      .container { padding: 16px; }
+      header { flex-direction: column; align-items: stretch; text-align: center; }
+      .filter-row { flex-direction: column; align-items: stretch; }
+      .tabs { flex-direction: column; }
+      .item:hover { transform: none; }
     }
   </style>
 </head>
@@ -429,7 +208,7 @@
           <span id="totals" class="pill"></span>
         </div>
       </div>
-      <button class="theme-toggle" onclick="toggleTheme()">
+      <button class="theme-toggle" id="themeToggle">
         <span id="theme-icon">🌙</span>
         <span id="theme-text">다크모드</span>
       </button>
@@ -440,38 +219,30 @@
       <div class="filter-row">
         <div class="filter-group">
           <label>보기:</label>
-          <select id="viewType" class="filter-select" onchange="applyFilters()">
+          <select id="viewType" class="filter-select">
             <option value="week">주차별</option>
             <option value="month">월별</option>
           </select>
         </div>
         <div class="filter-group">
           <label>월:</label>
-          <select id="monthFilter" class="filter-select" onchange="applyFilters()">
+          <select id="monthFilter" class="filter-select">
             <option value="">전체</option>
           </select>
         </div>
         <div class="filter-group">
           <label>주차:</label>
-          <select id="weekFilter" class="filter-select" onchange="applyFilters()">
+          <select id="weekFilter" class="filter-select">
             <option value="">전체</option>
           </select>
         </div>
       </div>
       
       <div class="tabs">
-        <button class="tab active" data-platform="all" onclick="switchPlatform('all', this)">
-          📊 전체
-        </button>
-        <button class="tab blog" data-platform="블로그" onclick="switchPlatform('블로그', this)">
-          📝 블로그
-        </button>
-        <button class="tab instagram" data-platform="인스타" onclick="switchPlatform('인스타', this)">
-          📷 인스타그램
-        </button>
-        <button class="tab facebook" data-platform="페북" onclick="switchPlatform('페북', this)">
-          👥 페이스북
-        </button>
+        <button class="tab active" data-platform="all">전체</button>
+        <button class="tab blog" data-platform="블로그">블로그</button>
+        <button class="tab instagram" data-platform="인스타">인스타그램</button>
+        <button class="tab facebook" data-platform="페북">페이스북</button>
       </div>
     </div>
 
@@ -490,315 +261,18 @@
   </div>
 
   <script>
-    // 전역 변수
+    // ===== 설정 =====
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v/pub?gid=0&single=true&output=csv';
+    const COLORS = { '블로그':'#2ecc71', '인스타':'#e91e63', '페북':'#3498db' };
+
+    // ===== 전역 상태 =====
     let allData = [];
     let filteredData = [];
     let currentPlatform = 'all';
     let currentViewType = 'week';
     let chartInstance = null;
 
-    // Theme toggle functionality
-    function toggleTheme() {
-      const body = document.body;
-      const themeIcon = document.getElementById('theme-icon');
-      const themeText = document.getElementById('theme-text');
-      
-      if (body.getAttribute('data-theme') === 'dark') {
-        body.removeAttribute('data-theme');
-        themeIcon.textContent = '🌙';
-        themeText.textContent = '다크모드';
-        localStorage.setItem('theme', 'light');
-      } else {
-        body.setAttribute('data-theme', 'dark');
-        themeIcon.textContent = '☀️';
-        themeText.textContent = '라이트모드';
-        localStorage.setItem('theme', 'dark');
-      }
-      
-      // 차트 다시 그리기
-      if (chartInstance) {
-        chartInstance.destroy();
-        renderChart(calculateCounts(filteredData));
-      }
-    }
-
-    // Initialize theme
-    document.addEventListener('DOMContentLoaded', function() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-        document.getElementById('theme-icon').textContent = '☀️';
-        document.getElementById('theme-text').textContent = '라이트모드';
-      }
-    });
-
-    // Platform switching
-    function switchPlatform(platform, element) {
-      // 모든 탭에서 active 클래스 제거
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      element.classList.add('active');
-      
-      currentPlatform = platform;
-      
-      // 제목 업데이트
-      const icons = {
-        'all': '📊 전체',
-        '블로그': '📝 블로그',
-        '인스타': '📷 인스타그램',
-        '페북': '👥 페이스북'
-      };
-      document.getElementById('contentTitle').textContent = icons[platform] + ' 게시물';
-      
-      applyFilters();
-    }
-
-    // 필터 적용
-    function applyFilters() {
-      currentViewType = document.getElementById('viewType').value;
-      const selectedMonth = document.getElementById('monthFilter').value;
-      const selectedWeek = document.getElementById('weekFilter').value;
-      
-      // 플랫폼 필터링
-      let platformFiltered = allData;
-      if (currentPlatform !== 'all') {
-        platformFiltered = allData.filter(item => item.platform === currentPlatform);
-      }
-      
-      // 월 필터링
-      let monthFiltered = platformFiltered;
-      if (selectedMonth) {
-        monthFiltered = platformFiltered.filter(item => item.date.startsWith(selectedMonth));
-      }
-      
-      // 주차 필터링
-      filteredData = monthFiltered;
-      if (selectedWeek) {
-        filteredData = monthFiltered.filter(item => weekOf(item.date) == selectedWeek);
-      }
-      
-      // UI 업데이트
-      if (currentViewType === 'week') {
-        renderByWeek(filteredData);
-      } else {
-        renderByMonth(filteredData);
-      }
-      
-      updateStats(filteredData);
-      
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-      renderChart(calculateCounts(filteredData));
-    }
-
-    // 통계 업데이트
-    function updateStats(data) {
-      const counts = calculateCounts(data);
-      const total = counts.blog + counts.instagram + counts.facebook;
-      
-      if (currentPlatform === 'all' && total > 0) {
-        document.getElementById('statsSummary').style.display = 'flex';
-        document.getElementById('statsSummary').innerHTML = `
-          <div class="stat-item">
-            <div class="stat-number" style="color: var(--blog-color)">${counts.blog}</div>
-            <div class="stat-label">블로그</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number" style="color: var(--instagram-color)">${counts.instagram}</div>
-            <div class="stat-label">인스타그램</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number" style="color: var(--facebook-color)">${counts.facebook}</div>
-            <div class="stat-label">페이스북</div>
-          </div>
-        `;
-      } else {
-        document.getElementById('statsSummary').style.display = 'none';
-      }
-    }
-
-    // 주차별 렌더링
-    function renderByWeek(data) {
-      if (currentPlatform === 'all') {
-        renderList(groupByWeek(data));
-      } else {
-        renderListByPlatform(groupByWeek(data));
-      }
-    }
-
-    // 월별 렌더링  
-    function renderByMonth(data) {
-      const grouped = groupByMonth(data);
-      if (currentPlatform === 'all') {
-        renderMonthList(grouped);
-      } else {
-        renderMonthListByPlatform(grouped);
-      }
-    }
-
-    // 플랫폼별 그룹 렌더링
-    function renderListByPlatform(grouped) {
-      const root = document.getElementById('weeks');
-      root.innerHTML = '';
-      
-      if (grouped.length === 0) {
-        root.innerHTML = '<div class="empty-state">선택한 조건에 맞는 게시물이 없습니다.</div>';
-        return;
-      }
-      
-      // 플랫폼별로 그룹화해서 표시
-      const platformGroups = {
-        '블로그': [],
-        '인스타': [],
-        '페북': []
-      };
-      
-      grouped.forEach(([week, arr]) => {
-        arr.forEach(item => {
-          if (!platformGroups[item.platform]) platformGroups[item.platform] = [];
-          platformGroups[item.platform].push({...item, week});
-        });
-      });
-      
-      Object.entries(platformGroups).forEach(([platform, items]) => {
-        if (items.length === 0) return;
-        
-        const platformDiv = document.createElement('div');
-        platformDiv.className = 'platform-group';
-        
-        const platformClass = platform === '블로그' ? 'blog' : platform === '인스타' ? 'instagram' : 'facebook';
-        const platformIcon = platform === '블로그' ? '📝' : platform === '인스타' ? '📷' : '👥';
-        
-        platformDiv.innerHTML = `
-          <div class="platform-header ${platformClass}">
-            ${platformIcon} ${platform} (${items.length}건)
-          </div>
-        `;
-        
-        items.sort((a,b) => a.date.localeCompare(b.date));
-        items.forEach(item => {
-          const itemDiv = document.createElement('div');
-          itemDiv.className = `item ${platformClass}`;
-          
-          const color = platform === '블로그' ? '#2ecc71' : platform === '인스타' ? '#e91e63' : '#3498db';
-          itemDiv.innerHTML = `
-            <div>
-              <span class="platform-dot" style="background:${color};"></span>
-              <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
-            </div>
-            <div class="meta">${item.date} · ${item.week}주차</div>
-          `;
-          platformDiv.appendChild(itemDiv);
-        });
-        
-        root.appendChild(platformDiv);
-      });
-    }
-
-    // 월별 그룹화
-    function groupByMonth(items) {
-      const map = {};
-      items.forEach(item => {
-        const month = item.date.slice(0, 7); // YYYY-MM
-        (map[month] ||= []).push(item);
-      });
-      return Object.entries(map).sort((a,b) => a[0].localeCompare(b[0]));
-    }
-
-    // 월별 렌더링
-    function renderMonthList(grouped) {
-      const root = document.getElementById('weeks');
-      root.innerHTML = '';
-      
-      if (grouped.length === 0) {
-        root.innerHTML = '<div class="empty-state">선택한 조건에 맞는 게시물이 없습니다.</div>';
-        return;
-      }
-      
-      grouped.forEach(([month, arr]) => {
-        const title = document.createElement('div');
-        title.className = 'week-title';
-        title.textContent = `${month} (${arr.length}건)`;
-        root.appendChild(title);
-        
-        arr.sort((a,b) => a.date.localeCompare(b.date));
-        arr.forEach(item => {
-          const row = document.createElement('div');
-          row.className = 'item';
-          
-          const color = item.platform === '블로그' ? '#2ecc71' : item.platform === '인스타' ? '#e91e63' : '#3498db';
-          row.innerHTML = `
-            <div>
-              <span class="platform-dot" style="background:${color};"></span>
-              <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
-            </div>
-            <div class="meta">${item.date} · ${item.platform}</div>
-          `;
-          root.appendChild(row);
-        });
-      });
-    }
-
-    function renderMonthListByPlatform(grouped) {
-      renderMonthList(grouped); // 같은 로직 사용
-    }
-
-    // 필터 옵션 업데이트
-    function updateFilterOptions(data) {
-      // 월 필터 업데이트
-      const months = [...new Set(data.map(item => item.date.slice(0, 7)))].sort();
-      const monthSelect = document.getElementById('monthFilter');
-      monthSelect.innerHTML = '<option value="">전체</option>';
-      months.forEach(month => {
-        monthSelect.innerHTML += `<option value="${month}">${month}</option>`;
-      });
-      
-      // 주차 필터 업데이트
-      const weeks = [...new Set(data.map(item => weekOf(item.date)))].sort((a,b) => a-b);
-      const weekSelect = document.getElementById('weekFilter');
-      weekSelect.innerHTML = '<option value="">전체</option>';
-      weeks.forEach(week => {
-        weekSelect.innerHTML += `<option value="${week}">${week}주차</option>`;
-      });
-    }
-
-    function calculateCounts(data) {
-      const counts = data.reduce((acc, item) => {
-        const key = item.platform === '블로그' ? 'blog' : 
-                   item.platform === '인스타' ? 'instagram' : 'facebook';
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {});
-      
-      return {
-        blog: counts.blog || 0,
-        instagram: counts.instagram || 0,
-        facebook: counts.facebook || 0
-      };
-    }
-
-    // === 원본 JavaScript 로직 완전 보존 시작 ===
-    
-    // === 1) 구글시트 CSV URL (웹에 게시 링크) ===
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v/pub?gid=0&single=true&output=csv';
-
-    // === 2) CSV 가져와서 안전 파싱 (헤더: 업로드날짜, 플랫폼, 주제, 링크) ===
-    async function fetchRows() {
-      const url = CSV_URL + `&cachebust=${Date.now()}`; // 기존에 ?가 있으므로 &로 연결
-      const res = await fetch(url, { cache: 'no-store' });
-      const text = await res.text();
-      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
-      return parsed.data
-        .map(r => ({
-          date: (r['업로드날짜'] || '').trim(),
-          platform: (r['플랫폼'] || '').trim(), // '블로그'/'인스타'/'페북'
-          title: (r['주제'] || '').trim(),
-          url: (r['링크'] || '').trim()
-        }))
-        .filter(x => x.title && x.url && x.date);
-    }
-
-    // === 3) 주차 계산(월 기준 1주차~) ===
+    // ===== 유틸 =====
     function weekOf(dateStr){
       const d = new Date(dateStr);
       const first = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -812,26 +286,20 @@
         const w = weekOf(it.date);
         (map[w] ||= []).push(it);
       });
-      return Object.entries(map).sort((a,b)=>a[0]-b[0]);
+      return Object.entries(map)
+        .sort((a,b)=>a[0]-b[0])
+        .map(([w, arr])=>[Number(w), arr.sort((a,b)=>a.date.localeCompare(b.date))]);
     }
 
-    // === 4) 목록 렌더 ===
-    function renderList(grouped){
-      const root = document.getElementById('weeks');
-      root.innerHTML = '';
-      
-      if (grouped.length === 0) {
-        root.innerHTML = '<div class="empty-state">선택한 조건에 맞는 게시물이 없습니다.</div>';
-        return;
-      }
-      
-      grouped.forEach(([week, arr])=>{
-        const title = document.createElement('div');
-        title.className = 'week-title';
-        title.textContent = `${week}주차 (${arr.length}건)`;
-        root.appendChild(title);
-        arr.sort((a,b)=>a.date.localeCompare(b.date));
-        arr.forEach(it=>{
-          const row = document.createElement('div');
-          row.className = 'item';
-          // 플랫폼별 색
+    function groupByMonth(items) {
+      const map = {};
+      items.forEach(item => {
+        const month = item.date.slice(0, 7); // YYYY-MM
+        (map[month] ||= []).push(item);
+      });
+      return Object.entries(map).sort((a,b) => a[0].localeCompare(b[0]));
+    }
+
+    function calculateCounts(data) {
+      const counts = data.reduce((acc, item) => {
+        const key = item.platform === '블로그' ? 'blog' : 

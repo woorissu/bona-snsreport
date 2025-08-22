@@ -490,14 +490,27 @@
       const ctx = document.getElementById('platformChart');
       const labels = ['블로그','인스타','페북'];
       const data = [counts.blog||0, counts.instagram||0, counts.facebook||0];
-      const bg = ['var(--blog-color)','var(--instagram-color)','var(--facebook-color)'];
+      const bg = ['#2ecc71','#e91e63','#3498db']; // ✅ 직접 HEX 코드 지정
+
       if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ label:'게시물 수', data, backgroundColor: bg }] },
-        options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
+        data: { 
+          labels, 
+          datasets: [{ 
+            label:'게시물 수', 
+            data, 
+            backgroundColor: bg 
+          }] 
+        },
+        options: { 
+          responsive:true, 
+          plugins:{legend:{display:false}}, 
+          scales:{y:{beginAtZero:true, ticks:{precision:0}}} 
+        }
       });
     }
+
 
     // ===== 필터/탭/테마 =====
     function updateFilterOptions(data) {

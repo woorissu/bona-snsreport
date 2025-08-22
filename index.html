@@ -174,7 +174,16 @@
     .item.facebook a:hover { color: var(--facebook-color); }
 
     /* ✅ 오늘 날짜 강조 */
-    .item.today { background: #e6f3ff; border-color: #90caf9; }
+    .item.today { 
+      background: #e6f3ff; 
+      border-color: #90caf9; 
+      }
+    /* ✅ 오늘 날짜 강조 (다크모드용) */
+    [data-theme="dark"] .item.today {
+      background: #2d3e50;   /* 진한 남색톤 */
+      border-color: #64b5f6; /* 밝은 파랑 */
+      }
+
 
     .meta { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
     .platform-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
@@ -214,6 +223,21 @@
       color: var(--text-secondary);
     }
 
+    /* ✅ 푸터 */
+  .footer {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-top: 40px;   /* 본문과의 gap */
+    padding: 20px 0;    /* 하단 여백 */
+    border-top: 1px solid var(--border-light); /* 구분선 */
+  }
+  [data-theme="dark"] .footer {
+    border-top: 1px solid var(--border-medium); /* 다크모드에서도 자연스럽게 */
+  }
+    
+    
     /* Responsive */
     @media (min-width: 1024px) { .grid { grid-template-columns: 1.5fr 1fr; } }
     @media (max-width: 768px) {
@@ -320,7 +344,13 @@
   </div>
 
   <!-- ✅ 하단 로고 텍스트 -->
-  <footer class="brand-footer">넥스트피닉스</footer>
+  <!-- ✅ 하단 푸터 -->
+<footer class="footer">
+  <a href="https://nextphoenix.co.kr" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
+    넥스트피닉스
+  </a>
+</footer>
+
 
   <script>
     // ===== 설정 =====

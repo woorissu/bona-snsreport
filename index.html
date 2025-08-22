@@ -258,6 +258,14 @@
             <option value="">전체</option>
           </select>
         </div>
+
+        <!-- ✅ 추가: 기간(달력) 필터 -->
+        <div class="filter-group">
+          <label>기간:</label>
+          <input type="date" id="startDate" class="filter-select" />
+          ~
+          <input type="date" id="endDate" class="filter-select" />
+        </div>
       </div>
       
       <div class="tabs">
@@ -358,31 +366,30 @@
         .filter(x => x.title && x.url && x.date);
     }
     
-  // CSV E열(0-index 4) 2~4행(0-index 1..3)에서 바로가기 링크를 읽는다.
-async function fetchQuickLinks() {
-  const url = CSV_URL + `&cachebust=${Date.now()}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  const text = await res.text();
+    // CSV E열(0-index 4) 2~4행(0-index 1..3)에서 바로가기 링크를 읽는다.
+    async function fetchQuickLinks() {
+      const url = CSV_URL + `&cachebust=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      const text = await res.text();
 
-  // 헤더 없이 파싱해서 행/열로 직접 접근
-  const raw = Papa.parse(text, { header: false, skipEmptyLines: true }).data;
+      // 헤더 없이 파싱해서 행/열로 직접 접근
+      const raw = Papa.parse(text, { header: false, skipEmptyLines: true }).data;
 
-  const blog   = (raw[1] && raw[1][4]) ? String(raw[1][4]).trim() : '#'; // E2
-  const insta  = (raw[2] && raw[2][4]) ? String(raw[2][4]).trim() : '#'; // E3
-  const fb     = (raw[3] && raw[3][4]) ? String(raw[3][4]).trim() : '#'; // E4
+      const blog   = (raw[1] && raw[1][4]) ? String(raw[1][4]).trim() : '#'; // E2
+      const insta  = (raw[2] && raw[2][4]) ? String(raw[2][4]).trim() : '#'; // E3
+      const fb     = (raw[3] && raw[3][4]) ? String(raw[3][4]).trim() : '#'; // E4
 
-  QUICK_LINKS = { blog, instagram: insta, facebook: fb };
+      QUICK_LINKS = { blog, instagram: insta, facebook: fb };
 
-  // 버튼 href 주입
-  const btnBlog = document.getElementById('btnBlog');
-  const btnInsta = document.getElementById('btnInsta');
-  const btnFb = document.getElementById('btnFb');
-  if (btnBlog) btnBlog.href = QUICK_LINKS.blog || '#';
-  if (btnInsta) btnInsta.href = QUICK_LINKS.instagram || '#';
-  if (btnFb) btnFb.href = QUICK_LINKS.facebook || '#';
-}
+      // 버튼 href 주입
+      const btnBlog = document.getElementById('btnBlog');
+      const btnInsta = document.getElementById('btnInsta');
+      const btnFb = document.getElementById('btnFb');
+      if (btnBlog) btnBlog.href = QUICK_LINKS.blog || '#';
+      if (btnInsta) btnInsta.href = QUICK_LINKS.instagram || '#';
+      if (btnFb) btnFb.href = QUICK_LINKS.facebook || '#';
+    }
 
-    
     // ===== 렌더링 =====
     function renderList(grouped){
       const root = document.getElementById('weeks');
@@ -556,9 +563,17 @@ async function fetchQuickLinks() {
       const selectedMonth = document.getElementById('monthFilter').value;
       const selectedWeek = document.getElementById('weekFilter').value;
 
+      // ✅ 추가: 날짜 범위 값 읽기
+      const start = document.getElementById('startDate').value; // YYYY-MM-DD
+      const end   = document.getElementById('endDate').value;   // YYYY-MM-DD
+
       let data = (currentPlatform === 'all') ? [...allData] : allData.filter(d => d.platform === currentPlatform);
       if (selectedMonth) data = data.filter(d => d.date.startsWith(selectedMonth));
       if (selectedWeek) data = data.filter(d => weekOf(d.date) == selectedWeek);
+
+      // ✅ 추가: 날짜 범위 필터 (문자열 비교; YYYY-MM-DD 형식 가정)
+      if (start) data = data.filter(d => d.date >= start);
+      if (end)   data = data.filter(d => d.date <= end);
 
       filteredData = data;
 
@@ -615,6 +630,10 @@ async function fetchQuickLinks() {
       document.querySelectorAll('.tab').forEach(btn=>{
         btn.addEventListener('click', ()=> switchPlatform(btn.dataset.platform, btn));
       });
+
+      // ✅ 추가: 날짜 입력 변경 시 필터 적용
+      document.getElementById('startDate').addEventListener('change', applyFilters);
+      document.getElementById('endDate').addEventListener('change', applyFilters);
     }
 
     // ===== 부트스트랩 =====

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNS 콘텐츠 대행 보고서</title>
+    <title>보나팩토리 SNS콘텐츠대행 리포트 ____넥스트피닉스</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
@@ -27,6 +27,14 @@
             --instagram-light: #fce7f3;
             --facebook-color: #1877f2;
             --facebook-light: #dbeafe;
+            
+            /* Status colors */
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --success-light: #dcfce7;
+            --error-light: #fee2e2;
+            --warning-light: #fef3c7;
         }
 
         [data-theme="dark"] {
@@ -60,6 +68,61 @@
             padding: 20px;
         }
 
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .loading-content {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            min-width: 300px;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--blog-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
         /* Header */
         .header {
             background: var(--bg-card);
@@ -83,7 +146,13 @@
             background-clip: text;
         }
 
-        .theme-toggle {
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .theme-toggle, .refresh-button {
             background: var(--bg-secondary);
             border: 2px solid var(--border-color);
             border-radius: 50px;
@@ -97,9 +166,61 @@
             transition: all 0.3s ease;
         }
 
-        .theme-toggle:hover {
+        .theme-toggle:hover, .refresh-button:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
+        }
+
+        .refresh-button {
+            background: var(--blog-color);
+            color: white;
+            border-color: var(--blog-color);
+        }
+
+        .refresh-button:disabled {
+            background: var(--text-secondary);
+            border-color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: var(--error-light);
+            color: var(--error-color);
+            border: 2px solid var(--error-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .error-message .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-message h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .retry-button {
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .retry-button:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
         }
 
         /* Summary Cards */
@@ -399,6 +520,11 @@
                 font-size: 1.5rem;
             }
 
+            .header-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
             .content-grid {
                 grid-template-columns: 1fr;
             }
@@ -423,15 +549,50 @@
             .summary-grid {
                 grid-template-columns: 1fr;
             }
+
+            .loading-content {
+                min-width: 280px;
+                margin: 1rem;
+            }
         }
 
         /* Dark theme chart colors */
         [data-theme="dark"] .chart-section canvas {
             filter: brightness(0.9);
         }
+
+        /* Data source info */
+        .data-source {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .data-source a {
+            color: var(--blog-color);
+            text-decoration: none;
+        }
+
+        .data-source a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">데이터 불러오는 중...</div>
+            <div class="loading-subtext">구글 시트에서 최신 데이터를 가져오고 있습니다</div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -439,103 +600,119 @@
                 <h1>SNS 콘텐츠 대행 보고서</h1>
                 <p id="reportDate" style="color: var(--text-secondary); margin-top: 0.5rem;"></p>
             </div>
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <span id="theme-icon">🌙</span>
-                <span id="theme-text">다크 모드</span>
-            </button>
-        </div>
-
-        <!-- Summary Cards -->
-        <div class="summary-grid">
-            <div class="summary-card blog">
-                <div class="icon">📝</div>
-                <h3>블로그</h3>
-                <div class="count" id="blog-count">0</div>
-            </div>
-            <div class="summary-card instagram">
-                <div class="icon">📷</div>
-                <h3>인스타그램</h3>
-                <div class="count" id="instagram-count">0</div>
-            </div>
-            <div class="summary-card facebook">
-                <div class="icon">👥</div>
-                <h3>페이스북</h3>
-                <div class="count" id="facebook-count">0</div>
+            <div class="header-controls">
+                <button class="refresh-button" onclick="refreshData()" id="refreshButton">
+                    🔄 새로고침
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-text">다크 모드</span>
+                </button>
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="filters">
-            <div class="filter-group">
-                <label for="monthFilter">월 선택:</label>
-                <select id="monthFilter" class="filter-select">
-                    <option value="">전체</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="weekFilter">주차 선택:</label>
-                <select id="weekFilter" class="filter-select">
-                    <option value="">전체</option>
-                </select>
-            </div>
+        <!-- Error Message (initially hidden) -->
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <div class="icon">⚠️</div>
+            <h3>데이터를 불러올 수 없습니다</h3>
+            <p id="errorText">네트워크 연결을 확인하고 다시 시도해주세요.</p>
+            <button class="retry-button" onclick="loadData()">다시 시도</button>
         </div>
 
-        <!-- Platform Tabs -->
-        <div class="tabs">
-            <button class="tab active" data-platform="all" onclick="switchTab('all', this)">
-                📊 전체
-            </button>
-            <button class="tab blog" data-platform="블로그" onclick="switchTab('블로그', this)">
-                📝 블로그
-            </button>
-            <button class="tab instagram" data-platform="인스타" onclick="switchTab('인스타', this)">
-                📷 인스타그램
-            </button>
-            <button class="tab facebook" data-platform="페북" onclick="switchTab('페북', this)">
-                👥 페이스북
-            </button>
-        </div>
-
-        <!-- Content Grid -->
-        <div class="content-grid">
-            <!-- Content List -->
-            <div class="content-list" id="contentList">
-                <div class="empty-state">
-                    <div class="icon">📄</div>
-                    <p>데이터를 불러오는 중...</p>
+        <!-- Main Content -->
+        <div id="mainContent">
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="summary-card blog">
+                    <div class="icon">📝</div>
+                    <h3>블로그</h3>
+                    <div class="count" id="blog-count">0</div>
+                </div>
+                <div class="summary-card instagram">
+                    <div class="icon">📷</div>
+                    <h3>인스타그램</h3>
+                    <div class="count" id="instagram-count">0</div>
+                </div>
+                <div class="summary-card facebook">
+                    <div class="icon">👥</div>
+                    <h3>페이스북</h3>
+                    <div class="count" id="facebook-count">0</div>
                 </div>
             </div>
 
-            <!-- Chart Section -->
-            <div class="chart-section">
-                <h3 class="chart-title">플랫폼별 게시물 통계</h3>
-                <div class="chart-container">
-                    <canvas id="platformChart"></canvas>
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="monthFilter">월 선택:</label>
+                    <select id="monthFilter" class="filter-select">
+                        <option value="">전체</option>
+                    </select>
                 </div>
+                <div class="filter-group">
+                    <label for="weekFilter">주차 선택:</label>
+                    <select id="weekFilter" class="filter-select">
+                        <option value="">전체</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Platform Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-platform="all" onclick="switchTab('all', this)">
+                    📊 전체
+                </button>
+                <button class="tab blog" data-platform="블로그" onclick="switchTab('블로그', this)">
+                    📝 블로그
+                </button>
+                <button class="tab instagram" data-platform="인스타" onclick="switchTab('인스타', this)">
+                    📷 인스타그램
+                </button>
+                <button class="tab facebook" data-platform="페북" onclick="switchTab('페북', this)">
+                    👥 페이스북
+                </button>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Content List -->
+                <div class="content-list" id="contentList">
+                    <div class="empty-state">
+                        <div class="icon">📄</div>
+                        <p>콘텐츠를 표시할 준비가 되었습니다.</p>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="chart-section">
+                    <h3 class="chart-title">플랫폼별 게시물 통계</h3>
+                    <div class="chart-container">
+                        <canvas id="platformChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Source Info -->
+            <div class="data-source">
+                📊 데이터 소스: <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v" target="_blank">구글 스프레드시트</a> 
+                | 마지막 업데이트: <span id="lastUpdate"></span>
             </div>
         </div>
     </div>
 
     <script>
-        // Sample data - Replace with actual CSV data
-        const sampleData = [
-            { date: '2024.12.01', platform: '블로그', subject: '겨울철 피부 관리 팁', link: 'https://blog.example.com/winter-skincare' },
-            { date: '2024.12.01', platform: '인스타', subject: '새로운 겨울 컬렉션', link: 'https://instagram.com/p/winter-collection' },
-            { date: '2024.12.02', platform: '페북', subject: '연말 이벤트 공지', link: 'https://facebook.com/events/year-end' },
-            { date: '2024.12.03', platform: '블로그', subject: '트렌드 메이크업 가이드', link: 'https://blog.example.com/makeup-trends' },
-            { date: '2024.12.04', platform: '인스타', subject: '일상 브이로그', link: 'https://instagram.com/p/daily-vlog' },
-            { date: '2024.12.05', platform: '페북', subject: '고객 후기 소개', link: 'https://facebook.com/posts/reviews' },
-            { date: '2024.12.08', platform: '블로그', subject: '건강한 식습관', link: 'https://blog.example.com/healthy-eating' },
-            { date: '2024.12.10', platform: '인스타', subject: '제품 언박싱', link: 'https://instagram.com/p/unboxing' },
-            { date: '2024.12.12', platform: '페북', subject: '브랜드 스토리', link: 'https://facebook.com/posts/brand-story' },
-            { date: '2024.12.15', platform: '블로그', subject: '연말 결산 및 신년 계획', link: 'https://blog.example.com/year-end-review' },
-            { date: '2024.12.16', platform: '인스타', subject: '크리스마스 특별 콘텐츠', link: 'https://instagram.com/p/christmas-special' },
-            { date: '2024.12.18', platform: '페북', subject: '팔로워 감사 인사', link: 'https://facebook.com/posts/thanks' },
-        ];
-
-        let contentData = sampleData;
+        // Configuration
+        const DEFAULT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v/pub?gid=0&single=true&output=csv';
+        
+        let contentData = [];
         let currentPlatform = 'all';
         let chartInstance = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            setReportDate();
+            loadData();
+        });
 
         // Theme toggle
         function toggleTheme() {
@@ -555,7 +732,6 @@
                 localStorage.setItem('theme', 'dark');
             }
             
-            // Update chart colors if chart exists
             if (chartInstance) {
                 updateChart();
             }
@@ -571,201 +747,138 @@
             }
         }
 
-        // Switch platform tab
-        function switchTab(platform, tabElement) {
-            // Update active tab
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            tabElement.classList.add('active');
-            
-            currentPlatform = platform;
-            renderContent();
+        // Show/Hide loading overlay
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('refreshButton').disabled = true;
         }
 
-        // Get filtered data
-        function getFilteredData() {
-            let filtered = contentData;
-            
-            // Platform filter
-            if (currentPlatform !== 'all') {
-                filtered = filtered.filter(item => item.platform === currentPlatform);
-            }
-            
-            // Month filter
-            const monthFilter = document.getElementById('monthFilter').value;
-            if (monthFilter) {
-                filtered = filtered.filter(item => item.date.startsWith(monthFilter));
-            }
-            
-            // Week filter
-            const weekFilter = document.getElementById('weekFilter').value;
-            if (weekFilter) {
-                filtered = filtered.filter(item => {
-                    const date = new Date(item.date.replace(/\./g, '-'));
-                    const week = getWeekNumber(date);
-                    return week.toString() === weekFilter;
-                });
-            }
-            
-            return filtered;
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('refreshButton').disabled = false;
         }
 
-        // Get week number
-        function getWeekNumber(date) {
-            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
-            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        // Show/Hide error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('mainContent').style.opacity = '0.5';
         }
 
-        // Render content list
-        function renderContent() {
-            const contentList = document.getElementById('contentList');
-            const filteredData = getFilteredData();
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('mainContent').style.opacity = '1';
+        }
+
+        // Data validation functions
+        function validateDate(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return false;
+            const regex = /^\d{4}\.\d{2}\.\d{2}$/;
+            if (!regex.test(dateStr)) return false;
             
-            if (filteredData.length === 0) {
-                contentList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📄</div>
-                        <p>선택한 조건에 해당하는 콘텐츠가 없습니다.</p>
-                    </div>
-                `;
-                return;
+            const parts = dateStr.split('.');
+            const year = parseInt(parts[0]);
+            const month = parseInt(parts[1]);
+            const day = parseInt(parts[2]);
+            
+            if (year < 2020 || year > 2030 || month < 1 || month > 12 || day < 1 || day > 31) {
+                return false;
             }
             
-            // Sort by date (newest first)
-            filteredData.sort((a, b) => new Date(b.date.replace(/\./g, '-')) - new Date(a.date.replace(/\./g, '-')));
-            
-            contentList.innerHTML = filteredData.map(item => {
-                const platformClass = item.platform === '블로그' ? 'blog' : 
-                                    item.platform === '인스타' ? 'instagram' : 'facebook';
-                const formattedDate = new Date(item.date.replace(/\./g, '-')).toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    weekday: 'short'
+            const date = new Date(year, month - 1, day);
+            return date.getFullYear() === year && 
+                   date.getMonth() === month - 1 && 
+                   date.getDate() === day;
+        }
+
+        function validatePlatform(platform) {
+            const validPlatforms = ['블로그', '인스타', '페북'];
+            return validPlatforms.includes(platform);
+        }
+
+        function validateUrl(url) {
+            if (!url || url.trim() === '') return false;
+            try {
+                new URL(url);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        // Load data from CSV
+        async function loadData() {
+            showLoading();
+            hideError();
+
+            try {
+                const response = await fetch(DEFAULT_CSV_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: false,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        try {
+                            processCSVData(results.data);
+                            hideLoading();
+                        } catch (error) {
+                            console.error('Data processing error:', error);
+                            showError('데이터 처리 중 오류가 발생했습니다.');
+                            hideLoading();
+                        }
+                    },
+                    error: function(error) {
+                        console.error('CSV parsing error:', error);
+                        showError('CSV 파싱 중 오류가 발생했습니다.');
+                        hideLoading();
+                    }
                 });
                 
-                return `
-                    <div class="content-card ${platformClass}">
-                        <div class="content-header">
-                            <div class="platform-badge ${platformClass}">${item.platform}</div>
-                            <div class="content-date">${formattedDate}</div>
-                        </div>
-                        <div class="content-title">
-                            <a href="${item.link}" target="_blank">${item.subject}</a>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Update summary counts
-        function updateSummary() {
-            const blogCount = contentData.filter(item => item.platform === '블로그').length;
-            const instaCount = contentData.filter(item => item.platform === '인스타').length;
-            const facebookCount = contentData.filter(item => item.platform === '페북').length;
-            
-            document.getElementById('blog-count').textContent = blogCount;
-            document.getElementById('instagram-count').textContent = instaCount;
-            document.getElementById('facebook-count').textContent = facebookCount;
-        }
-
-        // Initialize filters
-        function initFilters() {
-            const months = [...new Set(contentData.map(item => item.date.substring(0, 7)))].sort();
-            const monthFilter = document.getElementById('monthFilter');
-            
-            months.forEach(month => {
-                const option = document.createElement('option');
-                option.value = month;
-                option.textContent = month.replace('.', '년 ') + '월';
-                monthFilter.appendChild(option);
-            });
-            
-            // Week filter (1-52)
-            const weekFilter = document.getElementById('weekFilter');
-            for (let i = 1; i <= 52; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i + '주차';
-                weekFilter.appendChild(option);
-            }
-            
-            // Add event listeners
-            monthFilter.addEventListener('change', renderContent);
-            weekFilter.addEventListener('change', renderContent);
-        }
-
-        // Update chart
-        function updateChart() {
-            const ctx = document.getElementById('platformChart').getContext('2d');
-            const filteredData = getFilteredData();
-            
-            const blogCount = filteredData.filter(item => item.platform === '블로그').length;
-            const instaCount = filteredData.filter(item => item.platform === '인스타').length;
-            const facebookCount = filteredData.filter(item => item.platform === '페북').length;
-            
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            const textColor = isDark ? '#f1f5f9' : '#1e293b';
-            
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-            
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['블로그', '인스타그램', '페이스북'],
-                    datasets: [{
-                        data: [blogCount, instaCount, facebookCount],
-                        backgroundColor: [
-                            '#10b981',
-                            '#e1306c',
-                            '#1877f2'
-                        ],
-                        borderWidth: 2,
-                        borderColor: isDark ? '#334155' : '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: textColor,
-                                font: {
-                                    size: 12
-                                },
-                                padding: 20
-                            }
-                        }
-                    }
+            } catch (error) {
+                console.error('Data loading error:', error);
+                let errorMessage = '데이터를 불러올 수 없습니다.';
+                
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
+                } else if (error.message.includes('HTTP')) {
+                    errorMessage = '데이터 소스에 접근할 수 없습니다. 구글 시트가 공개되어 있는지 확인해주세요.';
                 }
-            });
+                
+                showError(errorMessage);
+                hideLoading();
+            }
         }
 
-        // Set report date
-        function setReportDate() {
-            const now = new Date();
-            const formattedDate = now.toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            document.getElementById('reportDate').textContent = `${formattedDate} 기준`;
-        }
+        // Process CSV data
+        function processCSVData(rawData) {
+            if (!rawData || rawData.length === 0) {
+                throw new Error('데이터가 비어있습니다.');
+            }
 
-        // Load CSV data (placeholder for actual implementation)
-        function loadCSVData() {
-            // This is where you would load actual CSV data
-            // For now, using sample data
+            const validData = [];
+            const errors = [];
             
-            // Example of how to load CSV:
-            // Papa.parse('your-csv-url-here', {
-            //     download: true,
-            //     header: true,
-            //     complete: function(results) {
-            //         contentData = results.
+            // Skip header row if exists
+            const startRow = rawData[0] && rawData[0].length > 0 && 
+                           (rawData[0][0].includes('날짜') || rawData[0][0].includes('업로드')) ? 1 : 0;
+            
+            for (let i = startRow; i < rawData.length; i++) {
+                const row = rawData[i];
+                const rowNum = i + 1;
+                
+                if (!row || row.length < 4) {
+                    errors.push(`행 ${rowNum}: 데이터가 부족합니다 (4개 열 필요)`);
+                    continue;
+                }
+                
+                const [date, platform, subject, link] = row;
+                
+                // 모든 필드가 비어있으면 스킵

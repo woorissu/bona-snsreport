@@ -125,7 +125,7 @@
     .filter-group { display: flex; align-items: center; gap: 8px; }
     .filter-group label { font-size: 14px; font-weight: 500; color: var(--text-secondary); min-width: auto; margin-right: 4px; }
 
-    .filter-select {
+    .filter-select, .search-input {
       background: var(--bg-secondary);
       border: 1px solid var(--border-medium);
       border-radius: 6px;
@@ -134,6 +134,7 @@
       color: var(--text-primary);
       min-width: 120px;
     }
+    .search-input { min-width: 200px; }
 
     .tabs { display: flex; gap: 4px; background: var(--bg-secondary); border-radius: 8px; padding: 4px; }
     .tab {
@@ -155,6 +156,7 @@
     .week-title {
       font-weight: 600; font-size: 16px; margin: 16px 0 8px; padding: 12px 16px;
       background: var(--bg-secondary); border-radius: 8px; border-left: 3px solid var(--text-tertiary); color: var(--text-primary);
+      border-bottom: 1px solid var(--border-light); /* ✅ 주차 블록 구분선 추가 */
     }
 
     .platform-group { margin-bottom: 20px; }
@@ -171,6 +173,9 @@
     .item.instagram a:hover { color: var(--instagram-color); }
     .item.facebook a:hover { color: var(--facebook-color); }
 
+    /* ✅ 오늘 날짜 강조 */
+    .item.today { background: #e6f3ff; border-color: #90caf9; }
+
     .meta { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
     .platform-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 
@@ -186,7 +191,7 @@
     .stat-number { font-size: 24px; font-weight: 700; color: var(--text-primary); }
     .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* === 추가: 안내 문구, 바로가기 버튼 === */
+    /* === 안내 문구, 바로가기 버튼 === */
     .notice { font-size: 14px; color: var(--text-tertiary); margin-top: 4px; }
     .link-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
     .btn-link {
@@ -199,6 +204,15 @@
     .btn-blog { border-color: var(--blog-color); }
     .btn-instagram { border-color: var(--instagram-color); }
     .btn-facebook { border-color: var(--facebook-color); }
+
+    /* ✅ 하단 로고 텍스트 */
+    footer.brand-footer {
+      text-align: center;
+      margin: 40px 0 12px;
+      font-size: 15pt;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
 
     /* Responsive */
     @media (min-width: 1024px) { .grid { grid-template-columns: 1.5fr 1fr; } }
@@ -219,7 +233,6 @@
       <div class="header-left">
         <h1>보나팩토리 SNS 컨텐츠 제작대행 리포트 from 넥스트피닉스</h1>
 
-        <!-- ✅ 추가: 안내 문구 -->
         <p class="notice">
           ※ <b>보나팩토리</b> 주 3회 이미지 콘텐츠 제작(페이스북&인스타 미러링) + 브랜딩 블로그 월 10회 <b>진행중</b> (상위노출 보장X) <br>
           ※ 문의사항은 넥스트피닉스 제작팀 실장 혹은 업체 담당자 임명선 대표님에게 연락주세요 
@@ -228,6 +241,8 @@
         <div class="header-badges">
           <span id="month" class="pill"></span>
           <span id="totals" class="pill"></span>
+          <!-- ✅ 자동 업데이트 안내 -->
+          <span id="updateTime" class="pill"></span>
         </div>
       </div>
       <button class="theme-toggle" id="themeToggle">
@@ -259,12 +274,18 @@
           </select>
         </div>
 
-        <!-- ✅ 추가: 기간(달력) 필터 -->
+        <!-- 기간(달력) 필터 -->
         <div class="filter-group">
           <label>기간:</label>
           <input type="date" id="startDate" class="filter-select" />
           ~
           <input type="date" id="endDate" class="filter-select" />
+        </div>
+
+        <!-- ✅ 검색창 -->
+        <div class="filter-group">
+          <label>검색:</label>
+          <input type="text" id="searchBox" class="search-input" placeholder="키워드 검색 (주제, 플랫폼)" />
         </div>
       </div>
       
@@ -287,8 +308,7 @@
         <h3>📊 플랫폼별 집계</h3>
         <canvas id="platformChart" height="240"></canvas>
 
-        <!-- ✅ 추가: 플랫폼 바로가기 버튼 -->
-        <!-- 그래프 아래 바로가기 버튼 -->
+        <!-- 플랫폼 바로가기 버튼 -->
         <div class="link-buttons">
           <a id="btnBlog" class="btn-link btn-blog" href="#" target="_blank" rel="noopener">📝 블로그 바로가기</a>
           <a id="btnInsta" class="btn-link btn-instagram" href="#" target="_blank" rel="noopener">📷 인스타 바로가기</a>
@@ -298,6 +318,9 @@
       </section>
     </div>
   </div>
+
+  <!-- ✅ 하단 로고 텍스트 -->
+  <footer class="brand-footer">넥스트피닉스</footer>
 
   <script>
     // ===== 설정 =====
@@ -319,6 +342,14 @@
       const diff = Math.floor((d - first)/(1000*60*60*24));
       return Math.floor(diff/7) + 1;
     }
+    function todayYMD(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${dd}`;
+    }
+    const TODAY = todayYMD();
 
     function groupByWeek(items){
       const map = {};
@@ -409,7 +440,7 @@
           const row = document.createElement('div');
           const cls = it.platform === '블로그' ? 'blog' : it.platform === '인스타' ? 'instagram' : 'facebook';
           const color = COLORS[it.platform] || '#666';
-          row.className = `item ${cls}`;
+          row.className = `item ${cls}` + (it.date === TODAY ? ' today' : ''); // ✅ 오늘 표시
           row.innerHTML = `
             <div>
               <span class="platform-dot" style="background:${color};"></span>
@@ -448,7 +479,7 @@
         items.sort((a,b)=>a.date.localeCompare(b.date));
         items.forEach(item=>{
           const row = document.createElement('div');
-          row.className = `item ${platformClass}`;
+          row.className = `item ${platformClass}` + (item.date === TODAY ? ' today' : ''); // ✅ 오늘 표시
           row.innerHTML = `
             <div>
               <span class="platform-dot" style="background:${color};"></span>
@@ -480,7 +511,7 @@
           const color = COLORS[item.platform] || '#666';
           const cls = item.platform === '블로그' ? 'blog' : item.platform === '인스타' ? 'instagram' : 'facebook';
           const row = document.createElement('div');
-          row.className = `item ${cls}`;
+          row.className = `item ${cls}` + (item.date === TODAY ? ' today' : ''); // ✅ 오늘 표시
           row.innerHTML = `
             <div>
               <span class="platform-dot" style="background:${color};"></span>
@@ -524,7 +555,7 @@
       const ctx = document.getElementById('platformChart');
       const labels = ['블로그','인스타','페북'];
       const data = [counts.blog||0, counts.instagram||0, counts.facebook||0];
-      const bg = ['#2ecc71','#e91e63','#3498db']; // ✅ 직접 HEX 코드 지정
+      const bg = ['#2ecc71','#e91e63','#3498db']; // ✅ 플랫폼별 색
 
       if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
@@ -563,17 +594,29 @@
       const selectedMonth = document.getElementById('monthFilter').value;
       const selectedWeek = document.getElementById('weekFilter').value;
 
-      // ✅ 추가: 날짜 범위 값 읽기
+      // 날짜 범위 값
       const start = document.getElementById('startDate').value; // YYYY-MM-DD
       const end   = document.getElementById('endDate').value;   // YYYY-MM-DD
 
+      // ✅ 검색어
+      const keyword = (document.getElementById('searchBox').value || '').trim().toLowerCase();
+
       let data = (currentPlatform === 'all') ? [...allData] : allData.filter(d => d.platform === currentPlatform);
       if (selectedMonth) data = data.filter(d => d.date.startsWith(selectedMonth));
-      if (selectedWeek) data = data.filter(d => weekOf(d.date) == selectedWeek);
+      if (selectedWeek)  data = data.filter(d => weekOf(d.date) == selectedWeek);
 
-      // ✅ 추가: 날짜 범위 필터 (문자열 비교; YYYY-MM-DD 형식 가정)
+      // 날짜 범위 필터 (YYYY-MM-DD 문자열 비교)
       if (start) data = data.filter(d => d.date >= start);
       if (end)   data = data.filter(d => d.date <= end);
+
+      // ✅ 키워드 필터 (주제/플랫폼/URL)
+      if (keyword) {
+        data = data.filter(d => 
+          (d.title || '').toLowerCase().includes(keyword) ||
+          (d.platform || '').toLowerCase().includes(keyword) ||
+          (d.url || '').toLowerCase().includes(keyword)
+        );
+      }
 
       filteredData = data;
 
@@ -621,28 +664,33 @@
         document.getElementById('theme-text').textContent = '라이트모드';
       }
 
-      // 셀렉트 변경
+      // 셀렉트/입력 변경
       document.getElementById('viewType').addEventListener('change', applyFilters);
       document.getElementById('monthFilter').addEventListener('change', applyFilters);
       document.getElementById('weekFilter').addEventListener('change', applyFilters);
+      document.getElementById('startDate').addEventListener('change', applyFilters);
+      document.getElementById('endDate').addEventListener('change', applyFilters);
+      document.getElementById('searchBox').addEventListener('input', applyFilters);
 
       // 탭
       document.querySelectorAll('.tab').forEach(btn=>{
         btn.addEventListener('click', ()=> switchPlatform(btn.dataset.platform, btn));
       });
+    }
 
-      // ✅ 추가: 날짜 입력 변경 시 필터 적용
-      document.getElementById('startDate').addEventListener('change', applyFilters);
-      document.getElementById('endDate').addEventListener('change', applyFilters);
+    function setUpdateTime(){
+      const el = document.getElementById('updateTime');
+      if (el) el.textContent = '업데이트: ' + new Date().toLocaleString('ko-KR');
     }
 
     // ===== 부트스트랩 =====
     (async ()=>{
       bindUI();
       allData = await fetchRows();
-      await fetchQuickLinks();          // 🔹 CSV E2~E4 링크 읽어와 버튼에 주입
+      await fetchQuickLinks();          // CSV E2~E4 링크 읽어와 버튼에 주입
       updateFilterOptions(allData);
-      applyFilters(); // 초기 렌더
+      setUpdateTime();                  // ✅ 자동 업데이트 표시
+      applyFilters();                   // 초기 렌더
     })();
 
     

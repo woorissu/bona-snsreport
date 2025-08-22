@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>보나팩토리 SNS콘텐츠대행 리포트 ____넥스트피닉스</title>
+    <title>SNS 콘텐츠 대행 보고서</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
@@ -122,29 +122,6 @@
         .loading-subtext {
             font-size: 0.875rem;
             color: var(--text-secondary);
-            margin-bottom: 1rem;
-        }
-
-        .loading-progress {
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            height: 8px;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-
-        .loading-progress-bar {
-            background: var(--blog-color);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 8px;
-        }
-
-        .loading-timeout {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 1rem;
         }
 
         /* Header */
@@ -234,20 +211,6 @@
             border: 2px solid var(--error-color);
         }
 
-        .status-banner.warning {
-            background: var(--warning-light);
-            color: var(--warning-color);
-            border: 2px solid var(--warning-color);
-        }
-
-        .status-banner .icon {
-            font-size: 1.2rem;
-        }
-
-        .status-banner .message {
-            flex: 1;
-        }
-
         .status-banner .action-btn {
             background: transparent;
             border: 1px solid currentColor;
@@ -258,53 +221,12 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
+            margin-left: auto;
         }
 
         .status-banner .action-btn:hover {
             background: currentColor;
             color: white;
-        }
-
-        /* Connection Status */
-        .connection-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--bg-card);
-            border-radius: 25px;
-            padding: 8px 16px;
-            box-shadow: var(--shadow);
-            font-size: 0.8rem;
-            font-weight: 500;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .connection-status.connected {
-            color: var(--success-color);
-        }
-
-        .connection-status.disconnected {
-            color: var(--error-color);
-        }
-
-        .connection-status.loading {
-            color: var(--warning-color);
-        }
-
-        .connection-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
         }
 
         /* Summary Cards */
@@ -669,22 +591,10 @@
                 padding: 2rem;
             }
 
-            .connection-status {
-                top: 10px;
-                right: 10px;
-                font-size: 0.75rem;
-                padding: 6px 12px;
-            }
-
             .data-source {
                 flex-direction: column;
                 text-align: center;
             }
-        }
-
-        /* Dark theme adjustments */
-        [data-theme="dark"] .chart-section canvas {
-            filter: brightness(0.9);
         }
     </style>
 </head>
@@ -693,19 +603,9 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <div class="loading-spinner"></div>
-            <div class="loading-text" id="loadingText">데이터 불러오는 중...</div>
-            <div class="loading-subtext" id="loadingSubtext">구글 시트에서 최신 데이터를 가져오고 있습니다</div>
-            <div class="loading-progress">
-                <div class="loading-progress-bar" id="loadingProgressBar"></div>
-            </div>
-            <div class="loading-timeout" id="loadingTimeout">최대 10초까지 소요될 수 있습니다</div>
+            <div class="loading-text">데이터 불러오는 중...</div>
+            <div class="loading-subtext">구글 시트에서 최신 데이터를 가져오고 있습니다</div>
         </div>
-    </div>
-
-    <!-- Connection Status -->
-    <div class="connection-status loading" id="connectionStatus">
-        <div class="connection-dot"></div>
-        <span id="connectionText">연결 중...</span>
     </div>
 
     <div class="container">
@@ -726,7 +626,7 @@
             </div>
         </div>
 
-        <!-- Status Banner (initially hidden) -->
+        <!-- Status Banner -->
         <div id="statusBanner" style="display: none;"></div>
 
         <!-- Main Content -->
@@ -754,13 +654,13 @@
             <div class="filters">
                 <div class="filter-group">
                     <label for="monthFilter">월 선택:</label>
-                    <select id="monthFilter" class="filter-select">
+                    <select id="monthFilter" class="filter-select" onchange="applyFilters()">
                         <option value="">전체</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label for="weekFilter">주차 선택:</label>
-                    <select id="weekFilter" class="filter-select">
+                    <select id="weekFilter" class="filter-select" onchange="applyFilters()">
                         <option value="">전체</option>
                     </select>
                 </div>
@@ -814,14 +714,13 @@
     <script>
         // Configuration
         const DEFAULT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v/pub?gid=0&single=true&output=csv';
-        const TIMEOUT_DURATION = 10000; // 10 seconds
-        const RETRY_ATTEMPTS = 3;
+        const TIMEOUT_DURATION = 15000; // 15 seconds
         
         let contentData = [];
+        let filteredData = [];
         let currentPlatform = 'all';
         let chartInstance = null;
         let loadingTimeout = null;
-        let currentAttempt = 0;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -862,54 +761,144 @@
             }
         }
 
-        // Loading state management
-        function showLoading() {
-            const overlay = document.getElementById('loadingOverlay');
-            const progressBar = document.getElementById('loadingProgressBar');
-            const loadingText = document.getElementById('loadingText');
-            const loadingSubtext = document.getElementById('loadingSubtext');
-            const connectionStatus = document.getElementById('connectionStatus');
-            const connectionText = document.getElementById('connectionText');
-            const refreshButton = document.getElementById('refreshButton');
-            
-            overlay.classList.remove('hidden');
-            refreshButton.disabled = true;
-            
-            // Update connection status
-            connectionStatus.className = 'connection-status loading';
-            connectionText.textContent = '데이터 로딩 중...';
-            
-            // Animate progress bar
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 90) progress = 90;
-                progressBar.style.width = progress + '%';
-            }, 200);
-            
-            // Set timeout
-            loadingTimeout = setTimeout(() => {
-                clearInterval(progressInterval);
-                handleTimeout();
-            }, TIMEOUT_DURATION);
-            
-            // Update loading text based on attempt
-            if (currentAttempt > 0) {
-                loadingText.textContent = `재시도 중... (${currentAttempt}/${RETRY_ATTEMPTS})`;
-                loadingSubtext.textContent = '연결 상태를 확인하고 있습니다';
-            }
+        function setReportDate() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            document.getElementById('reportDate').textContent = 
+                '생성일: ' + now.toLocaleDateString('ko-KR', options);
         }
 
-        function hideLoading(success = true) {
-            const overlay = document.getElementById('loadingOverlay');
-            const progressBar = document.getElementById('loadingProgressBar');
-            const connectionStatus = document.getElementById('connectionStatus');
-            const connectionText = document.getElementById('connectionText');
-            const refreshButton = document.getElementById('refreshButton');
+        // Loading state management
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('refreshButton').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('refreshButton').disabled = false;
             
             if (loadingTimeout) {
                 clearTimeout(loadingTimeout);
                 loadingTimeout = null;
             }
+        }
+
+        // Status banner management
+        function showStatus(type, message, actionText = null, actionCallback = null) {
+            const banner = document.getElementById('statusBanner');
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
             
-            // Complete progress bar
+            let html = `
+                <div class="status-banner ${type}">
+                    <span class="icon">${icon}</span>
+                    <span class="message">${message}</span>
+            `;
+            
+            if (actionText && actionCallback) {
+                html += `<button class="action-btn" onclick="${actionCallback}">${actionText}</button>`;
+            }
+            
+            html += `</div>`;
+            banner.innerHTML = html;
+            banner.style.display = 'block';
+            
+            // Auto hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    banner.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function hideStatus() {
+            document.getElementById('statusBanner').style.display = 'none';
+        }
+
+        // Data validation functions
+        function validateDate(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return false;
+            
+            // Support multiple date formats
+            const formats = [
+                /^\d{4}\.\d{2}\.\d{2}$/,  // 2024.01.15
+                /^\d{4}-\d{2}-\d{2}$/,   // 2024-01-15
+                /^\d{2}\/\d{2}\/\d{4}$/  // 01/15/2024
+            ];
+            
+            for (let format of formats) {
+                if (format.test(dateStr)) {
+                    let parts;
+                    if (dateStr.includes('.')) {
+                        parts = dateStr.split('.');
+                    } else if (dateStr.includes('-')) {
+                        parts = dateStr.split('-');
+                    } else if (dateStr.includes('/')) {
+                        parts = dateStr.split('/');
+                        // Reorder for MM/DD/YYYY format
+                        parts = [parts[2], parts[0], parts[1]];
+                    }
+                    
+                    const year = parseInt(parts[0]);
+                    const month = parseInt(parts[1]);
+                    const day = parseInt(parts[2]);
+                    
+                    if (year < 2020 || year > 2030 || month < 1 || month > 12 || day < 1 || day > 31) {
+                        return false;
+                    }
+                    
+                    const date = new Date(year, month - 1, day);
+                    return date.getFullYear() === year && 
+                           date.getMonth() === month - 1 && 
+                           date.getDate() === day;
+                }
+            }
+            
+            return false;
+        }
+
+        function validatePlatform(platform) {
+            if (!platform || platform.trim() === '') return false;
+            const validPlatforms = ['블로그', '인스타', '페북'];
+            return validPlatforms.includes(platform.trim());
+        }
+
+        function validateUrl(url) {
+            if (!url || url.trim() === '') return false;
+            try {
+                new URL(url);
+                return true;
+            } catch {
+                // Check for relative URLs or partial URLs
+                return url.includes('.') || url.startsWith('http') || url.startsWith('www');
+            }
+        }
+
+        // Data loading and processing
+        function loadData() {
+            showLoading();
+            hideStatus();
+            
+            // Set timeout
+            loadingTimeout = setTimeout(() => {
+                showStatus('error', '데이터 로딩 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.', '다시 시도', 'loadData()');
+                hideLoading();
+            }, TIMEOUT_DURATION);
+
+            Papa.parse(DEFAULT_CSV_URL, {
+                download: true,
+                header: false,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    try {
+                        hideLoading();
+                        processCSVData(results.data);
+                        showStatus('success', `총 ${contentData.length}개의 게시물을 성공적으로 불러왔습니다.`);
+                    } catch (error) {
+                        console.error('Data processing error:', error);
+                        showStatus('error

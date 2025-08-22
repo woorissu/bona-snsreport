@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>월간 SNS콘텐츠 리포트</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif; margin:24px; color:#111;}
+    header {display:flex; flex-wrap:wrap; gap:12px; align-items:baseline;}
+    h1 {margin:0; font-size: clamp(18px, 3.4vw, 26px);}
+    .pill {border:1px solid #ddd; border-radius:999px; padding:6px 12px; font-size:14px;}
+    .grid {display:grid; gap:20px; grid-template-columns: 1fr; max-width:980px; margin: 16px auto;}
+    .card {border:1px solid #eee; border-radius:12px; padding:16px; background:#fff;}
+    .list {display:flex; flex-direction:column; gap:10px;}
+    .item a {text-decoration:none; color:#0b6bff;}
+    .meta {font-size:12px; color:#666;}
+    .week-title {font-weight:700; margin:16px 0 6px;}
+    @media (min-width: 900px){ .grid{grid-template-columns: 1.2fr .8fr;} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>월간 SNS콘텐츠 리포트</h1>
+    <span id="month" class="pill"></span>
+    <span id="totals" class="pill"></span>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h3>주차별 게시물</h3>
+      <div id="weeks" class="list"></div>
+    </section>
+
+    <section class="card">
+      <h3>플랫폼별 집계</h3>
+      <canvas id="platformChart" height="240"></canvas>
+    </section>
+  </div>
+
+  <script src="./main.js"></script>
+</body>
+</html>

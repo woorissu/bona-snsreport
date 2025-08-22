@@ -239,10 +239,10 @@
       </div>
       
       <div class="tabs">
-        <button class="tab active" data-platform="all">전체</button>
-        <button class="tab blog" data-platform="블로그">블로그</button>
-        <button class="tab instagram" data-platform="인스타">인스타그램</button>
-        <button class="tab facebook" data-platform="페북">페이스북</button>
+        <button class="tab active" data-platform="all">📊 전체</button>
+        <button class="tab blog" data-platform="블로그">📝 블로그</button>
+        <button class="tab instagram" data-platform="인스타">📷 인스타그램</button>
+        <button class="tab facebook" data-platform="페북">👥 페이스북</button>
       </div>
     </div>
 
@@ -303,3 +303,268 @@
     function calculateCounts(data) {
       const counts = data.reduce((acc, item) => {
         const key = item.platform === '블로그' ? 'blog' : 
+                   item.platform === '인스타' ? 'instagram' : 'facebook';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        blog: counts.blog || 0,
+        instagram: counts.instagram || 0,
+        facebook: counts.facebook || 0
+      };
+    }
+
+    // ===== 데이터 로드 =====
+    async function fetchRows() {
+      const url = CSV_URL + `&cachebust=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      const text = await res.text();
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+      return parsed.data
+        .map(r => ({
+          date: (r['업로드날짜'] || '').trim(),
+          platform: (r['플랫폼'] || '').trim(), // '블로그'/'인스타'/'페북'
+          title: (r['주제'] || '').trim(),
+          url: (r['링크'] || '').trim()
+        }))
+        .filter(x => x.title && x.url && x.date);
+    }
+
+    // ===== 렌더링 =====
+    function renderList(grouped){
+      const root = document.getElementById('weeks');
+      root.innerHTML = '';
+      if (grouped.length === 0) {
+        root.innerHTML = '<div class="empty-state">선택한 조건에 맞는 게시물이 없습니다.</div>';
+        return;
+      }
+      grouped.forEach(([week, arr])=>{
+        const title = document.createElement('div');
+        title.className = 'week-title';
+        const counts = arr.reduce((acc,it)=>{ acc[it.platform]=(acc[it.platform]||0)+1; return acc; },{});
+        title.textContent = `${week}주차 (${arr.length}건 · 블 ${counts['블로그']||0} · 인 ${counts['인스타']||0} · 페 ${counts['페북']||0})`;
+        root.appendChild(title);
+
+        arr.forEach(it=>{
+          const row = document.createElement('div');
+          const cls = it.platform === '블로그' ? 'blog' : it.platform === '인스타' ? 'instagram' : 'facebook';
+          const color = COLORS[it.platform] || '#666';
+          row.className = `item ${cls}`;
+          row.innerHTML = `
+            <div>
+              <span class="platform-dot" style="background:${color};"></span>
+              <a href="${it.url}" target="_blank" rel="noopener">${it.title}</a>
+            </div>
+            <div class="meta">${it.date} · ${week}주차 · ${it.platform}</div>
+          `;
+          root.appendChild(row);
+        });
+      });
+    }
+
+    function renderListByPlatform(grouped) {
+      const root = document.getElementById('weeks');
+      root.innerHTML = '';
+      if (grouped.length === 0) {
+        root.innerHTML = '<div class="empty-state">선택한 조건에 맞는 게시물이 없습니다.</div>';
+        return;
+      }
+      const platformGroups = { '블로그': [], '인스타': [], '페북': [] };
+      grouped.forEach(([week, arr])=>{
+        arr.forEach(item => {
+          platformGroups[item.platform]?.push({ ...item, week });
+        });
+      });
+
+      Object.entries(platformGroups).forEach(([platform, items])=>{
+        if (!items.length) return;
+        const platformClass = platform === '블로그' ? 'blog' : platform === '인스타' ? 'instagram' : 'facebook';
+        const platformIcon = platform === '블로그' ? '📝' : platform === '인스타' ? '📷' : '👥';
+        const color = COLORS[platform] || '#666';
+
+        const container = document.createElement('div');
+        container.className = 'platform-group';
+        container.innerHTML = `<div class="platform-header ${platformClass}">${platformIcon} ${platform} (${items.length}건)</div>`;
+        items.sort((a,b)=>a.date.localeCompare(b.date));
+        items.forEach(item=>{
+          const row = document.createElement('div');
+          row.className = `item ${platformClass}`;
+          row.innerHTML = `
+            <div>
+              <span class="platform-dot" style="background:${color};"></span>
+              <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
+            </div>
+            <div class="meta">${item.date} · ${item.week}주차</div>
+          `;
+          container.appendChild(row);
+        });
+        root.appendChild(container);
+      });
+    }
+
+    function renderMonthList(grouped) {
+      const root = document.getElementById('weeks');
+      root.innerHTML = '';
+      if (grouped.length === 0) {
+        root.innerHTML = '<div class="empty-state">선택한 조건에 맞는 게시물이 없습니다.</div>';
+        return;
+      }
+      grouped.forEach(([month, arr])=>{
+        const title = document.createElement('div');
+        title.className = 'week-title';
+        title.textContent = `${month} (${arr.length}건)`;
+        root.appendChild(title);
+
+        arr.sort((a,b)=>a.date.localeCompare(b.date));
+        arr.forEach(item=>{
+          const color = COLORS[item.platform] || '#666';
+          const cls = item.platform === '블로그' ? 'blog' : item.platform === '인스타' ? 'instagram' : 'facebook';
+          const row = document.createElement('div');
+          row.className = `item ${cls}`;
+          row.innerHTML = `
+            <div>
+              <span class="platform-dot" style="background:${color};"></span>
+              <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
+            </div>
+            <div class="meta">${item.date} · ${item.platform}</div>
+          `;
+          root.appendChild(row);
+        });
+      });
+    }
+
+    // 상단 요약/배지, 차트
+    function renderTotals(items){
+      const counts = items.reduce((acc, it)=>{
+        acc[it.platform] = (acc[it.platform]||0)+1;
+        return acc;
+      }, {});
+      const blog = counts['블로그']||0, insta = counts['인스타']||0, fb = counts['페북']||0;
+      document.getElementById('totals').textContent = `총 ${blog+insta+fb}건`;
+
+      const m = items.map(x=> (x.date||'').slice(0,7)).filter(Boolean).sort().pop();
+      document.getElementById('month').textContent = m || '';
+
+      // 통계 카드 (전체 탭일 때만)
+      const stats = document.getElementById('statsSummary');
+      if (currentPlatform === 'all' && (blog+insta+fb)>0) {
+        stats.style.display = 'flex';
+        stats.innerHTML = `
+          <div class="stat-item"><div class="stat-number" style="color: var(--blog-color)">${blog}</div><div class="stat-label">블로그</div></div>
+          <div class="stat-item"><div class="stat-number" style="color: var(--instagram-color)">${insta}</div><div class="stat-label">인스타그램</div></div>
+          <div class="stat-item"><div class="stat-number" style="color: var(--facebook-color)">${fb}</div><div class="stat-label">페이스북</div></div>
+        `;
+      } else {
+        stats.style.display = 'none';
+      }
+      return { blog, instagram: insta, facebook: fb };
+    }
+
+    function renderChart(counts){
+      const ctx = document.getElementById('platformChart');
+      const labels = ['블로그','인스타','페북'];
+      const data = [counts.blog||0, counts.instagram||0, counts.facebook||0];
+      const bg = ['var(--blog-color)','var(--instagram-color)','var(--facebook-color)'];
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label:'게시물 수', data, backgroundColor: bg }] },
+        options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
+      });
+    }
+
+    // ===== 필터/탭/테마 =====
+    function updateFilterOptions(data) {
+      // 월 목록
+      const months = [...new Set(data.map(item => item.date.slice(0, 7)))].sort();
+      const monthSelect = document.getElementById('monthFilter');
+      monthSelect.innerHTML = '<option value="">전체</option>';
+      months.forEach(month => monthSelect.innerHTML += `<option value="${month}">${month}</option>`);
+      // 주차 목록 (전체 기준)
+      const weeks = [...new Set(data.map(item => weekOf(item.date)))].sort((a,b)=>a-b);
+      const weekSelect = document.getElementById('weekFilter');
+      weekSelect.innerHTML = '<option value="">전체</option>';
+      weeks.forEach(week => weekSelect.innerHTML += `<option value="${week}">${week}주차</option>`);
+    }
+
+    function applyFilters() {
+      currentViewType = document.getElementById('viewType').value;
+      const selectedMonth = document.getElementById('monthFilter').value;
+      const selectedWeek = document.getElementById('weekFilter').value;
+
+      // 플랫폼 필터
+      let data = (currentPlatform === 'all') ? [...allData] : allData.filter(d => d.platform === currentPlatform);
+      // 월 필터
+      if (selectedMonth) data = data.filter(d => d.date.startsWith(selectedMonth));
+      // 주차 필터
+      if (selectedWeek) data = data.filter(d => weekOf(d.date) == selectedWeek);
+
+      filteredData = data;
+
+      // 렌더
+      if (currentViewType === 'week') {
+        if (currentPlatform === 'all') renderList(groupByWeek(data));
+        else renderListByPlatform(groupByWeek(data));
+      } else {
+        const grouped = groupByMonth(data);
+        renderMonthList(grouped); // 플랫폼별 월보기도 동일 UI로
+      }
+
+      const counts = renderTotals(data);
+      renderChart(counts);
+    }
+
+    function switchPlatform(platform, buttonEl) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      buttonEl.classList.add('active');
+      currentPlatform = platform;
+      const titleMap = { 'all':'📊 전체', '블로그':'📝 블로그', '인스타':'📷 인스타그램', '페북':'👥 페이스북' };
+      document.getElementById('contentTitle').textContent = `${titleMap[platform]} 게시물`;
+      applyFilters();
+    }
+
+    function bindUI() {
+      // 테마 토글
+      const toggleBtn = document.getElementById('themeToggle');
+      toggleBtn.addEventListener('click', ()=>{
+        const body = document.body;
+        const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
+        if (body.getAttribute('data-theme') === 'dark') {
+          body.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; themeText.textContent = '다크모드'; localStorage.setItem('theme','light');
+        } else {
+          body.setAttribute('data-theme','dark'); themeIcon.textContent = '☀️'; themeText.textContent = '라이트모드'; localStorage.setItem('theme','dark');
+        }
+        if (chartInstance) { chartInstance.destroy(); renderChart(calculateCounts(filteredData)); }
+      });
+
+      // 저장된 테마 복원
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') {
+        document.body.setAttribute('data-theme','dark');
+        document.getElementById('theme-icon').textContent = '☀️';
+        document.getElementById('theme-text').textContent = '라이트모드';
+      }
+
+      // 셀렉트 변경
+      document.getElementById('viewType').addEventListener('change', applyFilters);
+      document.getElementById('monthFilter').addEventListener('change', applyFilters);
+      document.getElementById('weekFilter').addEventListener('change', applyFilters);
+
+      // 탭
+      document.querySelectorAll('.tab').forEach(btn=>{
+        btn.addEventListener('click', ()=> switchPlatform(btn.dataset.platform, btn));
+      });
+    }
+
+    // ===== 부트스트랩 =====
+    (async ()=>{
+      bindUI();
+      allData = await fetchRows();
+      updateFilterOptions(allData);
+      // 초기 렌더
+      applyFilters();
+    })();
+  </script>
+</body>
+</html>

@@ -3,14 +3,15 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-G
 function parseCSV(text){
   const rows = text.trim().split(/\r?\n/).map(r => r.split(','));
   const [header, ...lines] = rows;
-  const idx = (k)=>header.indexOf(k);
+  // 현재 시트 구조: A=업로드날짜, B=플랫폼, C=주제, D=링크
   return lines.map(c => ({
-    date: c[idx('date')],
-    platform: c[idx('platform')],
-    title: c[idx('title')],
-    url: c[idx('url')]
+    date: c[0],       // A열
+    platform: c[1],   // B열
+    title: c[2],      // C열
+    url: c[3]         // D열
   }));
 }
+
 
 function weekOf(dateStr){
   const d = new Date(dateStr);
@@ -53,21 +54,32 @@ function renderList(grouped){
 function renderTotals(items){
   const t = document.getElementById('totals');
   const counts = items.reduce((acc, it)=>{
-    acc[it.platform] = (acc[it.platform]||0)+1;
+    const key = (it.platform || '').trim(); // '블로그'/'인스타'/'페북'
+    acc[key] = (acc[key]||0)+1;
     return acc;
   }, {});
-  const blog = counts.blog||0, insta = counts.instagram||0, fb = counts.facebook||0;
+  const blog = counts['블로그']||0, insta = counts['인스타']||0, fb = counts['페북']||0;
   t.textContent = `블로그 ${blog} · 인스타 ${insta} · 페북 ${fb}`;
-  if(items[0]){
-    const m = items[0].date.slice(0,7);
-    document.getElementById('month').textContent = m;
+
+  // 월 표시: 가장 최근 데이터 기준(안전)
+  if(items.length){
+    const m = items
+      .map(x=> (x.date||'').slice(0,7))
+      .filter(Boolean)
+      .sort()
+      .pop();
+    document.getElementById('month').textContent = m || '';
   }
-  return counts;
+  return {
+    blog: blog,
+    instagram: insta,
+    facebook: fb
+  };
 }
 
 function renderChart(counts){
   const ctx = document.getElementById('platformChart');
-  const labels = ['blog','instagram','facebook'];
+  const labels = ['블로그','인스타','페북'];
   const data = labels.map(l=>counts[l]||0);
   new Chart(ctx, {
     type: 'bar',
@@ -77,7 +89,7 @@ function renderChart(counts){
 }
 
 (async ()=>{
-  const res = await fetch(CSV_URL + `?cachebust=${Date.now()}`, {cache:'no-store'});
+  const res = await fetch(CSV_URL + `&cachebust=${Date.now()}`, {cache:'no-store'});
   const text = await res.text();
   const items = parseCSV(text).filter(x=>x.title && x.url);
   const grouped = groupByWeek(items);

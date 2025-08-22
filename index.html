@@ -81,27 +81,36 @@
     }
 
     // === 4) 목록 렌더 ===
-    function renderList(grouped){
-      const root = document.getElementById('weeks');
-      root.innerHTML = '';
-      grouped.forEach(([week, arr])=>{
-        const title = document.createElement('div');
-        title.className = 'week-title';
-        title.textContent = `${week}주차 (${arr.length}건)`;
-        root.appendChild(title);
+  function renderList(grouped){
+    const root = document.getElementById('weeks');
+    root.innerHTML = '';
+    grouped.forEach(([week, arr])=>{
+      const title = document.createElement('div');
+      title.className = 'week-title';
+      title.textContent = `${week}주차 (${arr.length}건)`;
+      root.appendChild(title);
 
-        arr.sort((a,b)=>a.date.localeCompare(b.date));
-        arr.forEach(it=>{
-          const row = document.createElement('div');
-          row.className = 'item';
-          row.innerHTML = `
-            <div><a href="${it.url}" target="_blank" rel="noopener">${it.title}</a></div>
-            <div class="meta">${it.date} · ${it.platform}</div>
-          `;
-          root.appendChild(row);
-        });
+      arr.sort((a,b)=>a.date.localeCompare(b.date));
+      arr.forEach(it=>{
+        const row = document.createElement('div');
+        row.className = 'item';
+
+        // 플랫폼별 색상 클래스
+        let color = '#2ecc71'; // 기본 초록
+        if(it.platform === '인스타') color = '#e91e63'; // 분홍
+        if(it.platform === '페북') color = '#3498db';   // 파랑
+
+        row.innerHTML = `
+          <div>
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:6px;"></span>
+            <a href="${it.url}" target="_blank" rel="noopener">${it.title}</a>
+          </div>
+          <div class="meta">${it.date} · ${it.platform}</div>
+        `;
+        root.appendChild(row);
       });
-    }
+    });
+  }
 
     // === 5) 상단 배지(총합/월) 계산 ===
     function renderTotals(items){
@@ -128,21 +137,32 @@
     }
 
     // === 6) 차트 렌더 (라벨은 한글, 데이터는 영문 키) ===
-    function renderChart(counts){
-      const ctx = document.getElementById('platformChart');
-      const labels = ['블로그','인스타','페북']; // 화면 라벨
-      const data = [counts.blog||0, counts.instagram||0, counts.facebook||0]; // 데이터
+  function renderChart(counts){
+    const ctx = document.getElementById('platformChart');
+    const labels = ['블로그','인스타','페북'];
+    const data = [counts.blog||0, counts.instagram||0, counts.facebook||0];
 
-      new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets: [{ label:'게시물 수', data }] },
-        options: {
-          responsive: true,
-          plugins:{ legend:{ display:false } },
-          scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }
-        }
-      });
-    }
+    new Chart(ctx, {
+      type: 'bar',
+      data: { 
+        labels, 
+        datasets: [{
+          label:'게시물 수', 
+          data,
+          backgroundColor: [
+            '#2ecc71', // 블로그 = 초록
+            '#e91e63', // 인스타 = 분홍
+            '#3498db'  // 페북 = 파랑
+          ]
+        }] 
+      },
+      options: {
+        responsive: true,
+        plugins:{ legend:{ display:false } },
+        scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }
+      }
+    });
+  }
 
     // === 7) 실행 ===
     (async ()=>{

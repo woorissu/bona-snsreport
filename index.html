@@ -1,177 +1,771 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>보나팩토리 월간 SNS콘텐츠 리포트 - 넥스트피닉스 </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNS 콘텐츠 대행 보고서</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        :root {
+            /* Light theme */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            
+            /* Platform colors */
+            --blog-color: #10b981;
+            --blog-light: #d1fae5;
+            --instagram-gradient: linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4);
+            --instagram-color: #e1306c;
+            --instagram-light: #fce7f3;
+            --facebook-color: #1877f2;
+            --facebook-light: #dbeafe;
+        }
 
-  <!-- Chart.js & Papa Parse (CSV 안전 파싱) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #475569;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+        }
 
-  <style>
-    :root { color-scheme: light; }
-    body { font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; margin:24px; color:#111; background:#fafafa; }
-    header { display:flex; flex-wrap:wrap; gap:12px; align-items:baseline; }
-    h1 { margin:0; font-size: clamp(18px, 3.4vw, 26px); }
-    .pill { border:1px solid #ddd; border-radius:999px; padding:6px 12px; font-size:14px; background:#fff; }
-    .grid { display:grid; gap:20px; grid-template-columns: 1fr; max-width:980px; margin:16px auto; }
-    .card { border:1px solid #eee; border-radius:12px; padding:16px; background:#fff; }
-    .list { display:flex; flex-direction:column; gap:10px; }
-    .item a { text-decoration:none; color:#0b6bff; }
-    .meta { font-size:12px; color:#666; }
-    .week-title { font-weight:700; margin:16px 0 6px; }
-    @media (min-width: 900px){ .grid{ grid-template-columns: 1.2fr .8fr; } }
-  </style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--blog-color), var(--instagram-color), var(--facebook-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .summary-card.blog {
+            border-left: 4px solid var(--blog-color);
+        }
+
+        .summary-card.instagram {
+            border-left: 4px solid var(--instagram-color);
+        }
+
+        .summary-card.facebook {
+            border-left: 4px solid var(--facebook-color);
+        }
+
+        .summary-card .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 24px;
+        }
+
+        .summary-card.blog .icon {
+            background: var(--blog-light);
+            color: var(--blog-color);
+        }
+
+        .summary-card.instagram .icon {
+            background: var(--instagram-light);
+            color: var(--instagram-color);
+        }
+
+        .summary-card.facebook .icon {
+            background: var(--facebook-light);
+            color: var(--facebook-color);
+        }
+
+        .summary-card h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Filters */
+        .filters {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .filter-select {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 8px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            gap: 8px;
+        }
+
+        .tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+        }
+
+        .tab.blog.active {
+            background: var(--blog-color);
+            color: white;
+        }
+
+        .tab.instagram.active {
+            background: var(--instagram-gradient);
+            color: white;
+        }
+
+        .tab.facebook.active {
+            background: var(--facebook-color);
+            color: white;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Content Cards */
+        .content-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .content-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--border-color);
+        }
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .content-card.blog {
+            border-left-color: var(--blog-color);
+        }
+
+        .content-card.instagram {
+            border-left-color: var(--instagram-color);
+        }
+
+        .content-card.facebook {
+            border-left-color: var(--facebook-color);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .platform-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .platform-badge.blog {
+            background: var(--blog-light);
+            color: var(--blog-color);
+        }
+
+        .platform-badge.instagram {
+            background: var(--instagram-light);
+            color: var(--instagram-color);
+        }
+
+        .platform-badge.facebook {
+            background: var(--facebook-light);
+            color: var(--facebook-color);
+        }
+
+        .content-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-title a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .content-title a:hover {
+            color: var(--instagram-color);
+        }
+
+        .content-date {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                width: 100%;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                justify-content: space-between;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Dark theme chart colors */
+        [data-theme="dark"] .chart-section canvas {
+            filter: brightness(0.9);
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1> SNS 컨텐츠 대행 리포트 from 넥스트피닉스</h1>
-    <span id="month" class="pill"></span>
-    <span id="totals" class="pill"></span>
-  </header>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>SNS 콘텐츠 대행 보고서</h1>
+                <p id="reportDate" style="color: var(--text-secondary); margin-top: 0.5rem;"></p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-text">다크 모드</span>
+            </button>
+        </div>
 
-  <div class="grid">
-    <section class="card">
-      <h3>주차별 게시물</h3>
-      <div id="weeks" class="list"></div>
-    </section>
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card blog">
+                <div class="icon">📝</div>
+                <h3>블로그</h3>
+                <div class="count" id="blog-count">0</div>
+            </div>
+            <div class="summary-card instagram">
+                <div class="icon">📷</div>
+                <h3>인스타그램</h3>
+                <div class="count" id="instagram-count">0</div>
+            </div>
+            <div class="summary-card facebook">
+                <div class="icon">👥</div>
+                <h3>페이스북</h3>
+                <div class="count" id="facebook-count">0</div>
+            </div>
+        </div>
 
-    <section class="card">
-      <h3>플랫폼별 집계</h3>
-      <canvas id="platformChart" height="240"></canvas>
-    </section>
-  </div>
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <label for="monthFilter">월 선택:</label>
+                <select id="monthFilter" class="filter-select">
+                    <option value="">전체</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="weekFilter">주차 선택:</label>
+                <select id="weekFilter" class="filter-select">
+                    <option value="">전체</option>
+                </select>
+            </div>
+        </div>
 
-  <script>
-    // === 1) 구글시트 CSV URL (웹에 게시 링크) ===
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v/pub?gid=0&single=true&output=csv';
+        <!-- Platform Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-platform="all" onclick="switchTab('all', this)">
+                📊 전체
+            </button>
+            <button class="tab blog" data-platform="블로그" onclick="switchTab('블로그', this)">
+                📝 블로그
+            </button>
+            <button class="tab instagram" data-platform="인스타" onclick="switchTab('인스타', this)">
+                📷 인스타그램
+            </button>
+            <button class="tab facebook" data-platform="페북" onclick="switchTab('페북', this)">
+                👥 페이스북
+            </button>
+        </div>
 
-    // === 2) CSV 가져와서 안전 파싱 (헤더: 업로드날짜, 플랫폼, 주제, 링크) ===
-    async function fetchRows() {
-      const url = CSV_URL + `&cachebust=${Date.now()}`; // 기존에 ?가 있으므로 &로 연결
-      const res = await fetch(url, { cache: 'no-store' });
-      const text = await res.text();
-      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
-      return parsed.data
-        .map(r => ({
-          date: (r['업로드날짜'] || '').trim(),
-          platform: (r['플랫폼'] || '').trim(), // '블로그'/'인스타'/'페북'
-          title: (r['주제'] || '').trim(),
-          url: (r['링크'] || '').trim()
-        }))
-        .filter(x => x.title && x.url && x.date);
-    }
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Content List -->
+            <div class="content-list" id="contentList">
+                <div class="empty-state">
+                    <div class="icon">📄</div>
+                    <p>데이터를 불러오는 중...</p>
+                </div>
+            </div>
 
-    // === 3) 주차 계산(월 기준 1주차~) ===
-    function weekOf(dateStr){
-      const d = new Date(dateStr);
-      const first = new Date(d.getFullYear(), d.getMonth(), 1);
-      const diff = Math.floor((d - first)/(1000*60*60*24));
-      return Math.floor(diff/7) + 1;
-    }
+            <!-- Chart Section -->
+            <div class="chart-section">
+                <h3 class="chart-title">플랫폼별 게시물 통계</h3>
+                <div class="chart-container">
+                    <canvas id="platformChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function groupByWeek(items){
-      const map = {};
-      items.forEach(it=>{
-        const w = weekOf(it.date);
-        (map[w] ||= []).push(it);
-      });
-      return Object.entries(map).sort((a,b)=>a[0]-b[0]);
-    }
+    <script>
+        // Sample data - Replace with actual CSV data
+        const sampleData = [
+            { date: '2024.12.01', platform: '블로그', subject: '겨울철 피부 관리 팁', link: 'https://blog.example.com/winter-skincare' },
+            { date: '2024.12.01', platform: '인스타', subject: '새로운 겨울 컬렉션', link: 'https://instagram.com/p/winter-collection' },
+            { date: '2024.12.02', platform: '페북', subject: '연말 이벤트 공지', link: 'https://facebook.com/events/year-end' },
+            { date: '2024.12.03', platform: '블로그', subject: '트렌드 메이크업 가이드', link: 'https://blog.example.com/makeup-trends' },
+            { date: '2024.12.04', platform: '인스타', subject: '일상 브이로그', link: 'https://instagram.com/p/daily-vlog' },
+            { date: '2024.12.05', platform: '페북', subject: '고객 후기 소개', link: 'https://facebook.com/posts/reviews' },
+            { date: '2024.12.08', platform: '블로그', subject: '건강한 식습관', link: 'https://blog.example.com/healthy-eating' },
+            { date: '2024.12.10', platform: '인스타', subject: '제품 언박싱', link: 'https://instagram.com/p/unboxing' },
+            { date: '2024.12.12', platform: '페북', subject: '브랜드 스토리', link: 'https://facebook.com/posts/brand-story' },
+            { date: '2024.12.15', platform: '블로그', subject: '연말 결산 및 신년 계획', link: 'https://blog.example.com/year-end-review' },
+            { date: '2024.12.16', platform: '인스타', subject: '크리스마스 특별 콘텐츠', link: 'https://instagram.com/p/christmas-special' },
+            { date: '2024.12.18', platform: '페북', subject: '팔로워 감사 인사', link: 'https://facebook.com/posts/thanks' },
+        ];
 
-    // === 4) 목록 렌더 ===
-  function renderList(grouped){
-    const root = document.getElementById('weeks');
-    root.innerHTML = '';
-    grouped.forEach(([week, arr])=>{
-      const title = document.createElement('div');
-      title.className = 'week-title';
-      title.textContent = `${week}주차 (${arr.length}건)`;
-      root.appendChild(title);
+        let contentData = sampleData;
+        let currentPlatform = 'all';
+        let chartInstance = null;
 
-      arr.sort((a,b)=>a.date.localeCompare(b.date));
-      arr.forEach(it=>{
-        const row = document.createElement('div');
-        row.className = 'item';
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = '다크 모드';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = '라이트 모드';
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            // Update chart colors if chart exists
+            if (chartInstance) {
+                updateChart();
+            }
+        }
 
-        // 플랫폼별 색상 클래스
-        let color = '#2ecc71'; // 기본 초록
-        if(it.platform === '인스타') color = '#e91e63'; // 분홍
-        if(it.platform === '페북') color = '#3498db';   // 파랑
+        // Initialize theme from localStorage
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = '라이트 모드';
+            }
+        }
 
-        row.innerHTML = `
-          <div>
-            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:6px;"></span>
-            <a href="${it.url}" target="_blank" rel="noopener">${it.title}</a>
-          </div>
-          <div class="meta">${it.date} · ${it.platform}</div>
-        `;
-        root.appendChild(row);
-      });
-    });
-  }
+        // Switch platform tab
+        function switchTab(platform, tabElement) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            tabElement.classList.add('active');
+            
+            currentPlatform = platform;
+            renderContent();
+        }
 
-    // === 5) 상단 배지(총합/월) 계산 ===
-    function renderTotals(items){
-      const t = document.getElementById('totals');
-      const counts = items.reduce((acc, it)=>{
-        const key = (it.platform || '').trim(); // '블로그'/'인스타'/'페북'
-        acc[key] = (acc[key]||0)+1;
-        return acc;
-      }, {});
-      const blog = counts['블로그']||0, insta = counts['인스타']||0, fb = counts['페북']||0;
-      t.textContent = `블로그 ${blog} · 인스타 ${insta} · 페북 ${fb}`;
+        // Get filtered data
+        function getFilteredData() {
+            let filtered = contentData;
+            
+            // Platform filter
+            if (currentPlatform !== 'all') {
+                filtered = filtered.filter(item => item.platform === currentPlatform);
+            }
+            
+            // Month filter
+            const monthFilter = document.getElementById('monthFilter').value;
+            if (monthFilter) {
+                filtered = filtered.filter(item => item.date.startsWith(monthFilter));
+            }
+            
+            // Week filter
+            const weekFilter = document.getElementById('weekFilter').value;
+            if (weekFilter) {
+                filtered = filtered.filter(item => {
+                    const date = new Date(item.date.replace(/\./g, '-'));
+                    const week = getWeekNumber(date);
+                    return week.toString() === weekFilter;
+                });
+            }
+            
+            return filtered;
+        }
 
-      // month 표시: 가장 최근 데이터 기준(안전)
-      if(items.length){
-        const m = items
-          .map(x=> (x.date||'').slice(0,7))
-          .filter(Boolean)
-          .sort()
-          .pop();
-        document.getElementById('month').textContent = m || '';
-      }
-      // 차트용은 영문 키로 반환
-      return { blog, instagram: insta, facebook: fb };
-    }
+        // Get week number
+        function getWeekNumber(date) {
+            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        }
 
-    // === 6) 차트 렌더 (라벨은 한글, 데이터는 영문 키) ===
-  function renderChart(counts){
-    const ctx = document.getElementById('platformChart');
-    const labels = ['블로그','인스타','페북'];
-    const data = [counts.blog||0, counts.instagram||0, counts.facebook||0];
+        // Render content list
+        function renderContent() {
+            const contentList = document.getElementById('contentList');
+            const filteredData = getFilteredData();
+            
+            if (filteredData.length === 0) {
+                contentList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📄</div>
+                        <p>선택한 조건에 해당하는 콘텐츠가 없습니다.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by date (newest first)
+            filteredData.sort((a, b) => new Date(b.date.replace(/\./g, '-')) - new Date(a.date.replace(/\./g, '-')));
+            
+            contentList.innerHTML = filteredData.map(item => {
+                const platformClass = item.platform === '블로그' ? 'blog' : 
+                                    item.platform === '인스타' ? 'instagram' : 'facebook';
+                const formattedDate = new Date(item.date.replace(/\./g, '-')).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
+                
+                return `
+                    <div class="content-card ${platformClass}">
+                        <div class="content-header">
+                            <div class="platform-badge ${platformClass}">${item.platform}</div>
+                            <div class="content-date">${formattedDate}</div>
+                        </div>
+                        <div class="content-title">
+                            <a href="${item.link}" target="_blank">${item.subject}</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
-    new Chart(ctx, {
-      type: 'bar',
-      data: { 
-        labels, 
-        datasets: [{
-          label:'게시물 수', 
-          data,
-          backgroundColor: [
-            '#2ecc71', // 블로그 = 초록
-            '#e91e63', // 인스타 = 분홍
-            '#3498db'  // 페북 = 파랑
-          ]
-        }] 
-      },
-      options: {
-        responsive: true,
-        plugins:{ legend:{ display:false } },
-        scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }
-      }
-    });
-  }
+        // Update summary counts
+        function updateSummary() {
+            const blogCount = contentData.filter(item => item.platform === '블로그').length;
+            const instaCount = contentData.filter(item => item.platform === '인스타').length;
+            const facebookCount = contentData.filter(item => item.platform === '페북').length;
+            
+            document.getElementById('blog-count').textContent = blogCount;
+            document.getElementById('instagram-count').textContent = instaCount;
+            document.getElementById('facebook-count').textContent = facebookCount;
+        }
 
-    // === 7) 실행 ===
-    (async ()=>{
-      const items = await fetchRows();
-      const grouped = groupByWeek(items);
-      renderList(grouped);
-      const counts = renderTotals(items);
-      renderChart(counts);
-    })();
-  </script>
-</body>
-</html>
+        // Initialize filters
+        function initFilters() {
+            const months = [...new Set(contentData.map(item => item.date.substring(0, 7)))].sort();
+            const monthFilter = document.getElementById('monthFilter');
+            
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month.replace('.', '년 ') + '월';
+                monthFilter.appendChild(option);
+            });
+            
+            // Week filter (1-52)
+            const weekFilter = document.getElementById('weekFilter');
+            for (let i = 1; i <= 52; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + '주차';
+                weekFilter.appendChild(option);
+            }
+            
+            // Add event listeners
+            monthFilter.addEventListener('change', renderContent);
+            weekFilter.addEventListener('change', renderContent);
+        }
+
+        // Update chart
+        function updateChart() {
+            const ctx = document.getElementById('platformChart').getContext('2d');
+            const filteredData = getFilteredData();
+            
+            const blogCount = filteredData.filter(item => item.platform === '블로그').length;
+            const instaCount = filteredData.filter(item => item.platform === '인스타').length;
+            const facebookCount = filteredData.filter(item => item.platform === '페북').length;
+            
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#f1f5f9' : '#1e293b';
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['블로그', '인스타그램', '페이스북'],
+                    datasets: [{
+                        data: [blogCount, instaCount, facebookCount],
+                        backgroundColor: [
+                            '#10b981',
+                            '#e1306c',
+                            '#1877f2'
+                        ],
+                        borderWidth: 2,
+                        borderColor: isDark ? '#334155' : '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor,
+                                font: {
+                                    size: 12
+                                },
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Set report date
+        function setReportDate() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('reportDate').textContent = `${formattedDate} 기준`;
+        }
+
+        // Load CSV data (placeholder for actual implementation)
+        function loadCSVData() {
+            // This is where you would load actual CSV data
+            // For now, using sample data
+            
+            // Example of how to load CSV:
+            // Papa.parse('your-csv-url-here', {
+            //     download: true,
+            //     header: true,
+            //     complete: function(results) {
+            //         contentData = results.

@@ -75,7 +75,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -90,20 +90,21 @@
         .loading-content {
             background: var(--bg-card);
             border-radius: 16px;
-            padding: 2rem;
+            padding: 2.5rem;
             text-align: center;
             box-shadow: var(--shadow-lg);
-            min-width: 300px;
+            min-width: 320px;
+            max-width: 400px;
         }
 
         .loading-spinner {
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             border: 4px solid var(--border-color);
             border-top: 4px solid var(--blog-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            margin: 0 auto 1.5rem;
         }
 
         @keyframes spin {
@@ -112,8 +113,8 @@
         }
 
         .loading-text {
-            font-size: 1.125rem;
-            font-weight: 500;
+            font-size: 1.25rem;
+            font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
         }
@@ -121,6 +122,29 @@
         .loading-subtext {
             font-size: 0.875rem;
             color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .loading-progress {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .loading-progress-bar {
+            background: var(--blog-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .loading-timeout {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
         }
 
         /* Header */
@@ -156,12 +180,13 @@
             background: var(--bg-secondary);
             border: 2px solid var(--border-color);
             border-radius: 50px;
-            padding: 8px 16px;
+            padding: 10px 18px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 14px;
+            font-weight: 500;
             color: var(--text-primary);
             transition: all 0.3s ease;
         }
@@ -182,45 +207,104 @@
             border-color: var(--text-secondary);
             cursor: not-allowed;
             transform: none;
+            opacity: 0.7;
         }
 
-        /* Error Message */
-        .error-message {
+        /* Status Messages */
+        .status-banner {
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .status-banner.success {
+            background: var(--success-light);
+            color: var(--success-color);
+            border: 2px solid var(--success-color);
+        }
+
+        .status-banner.error {
             background: var(--error-light);
             color: var(--error-color);
             border: 2px solid var(--error-color);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
         }
 
-        .error-message .icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
+        .status-banner.warning {
+            background: var(--warning-light);
+            color: var(--warning-color);
+            border: 2px solid var(--warning-color);
         }
 
-        .error-message h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
+        .status-banner .icon {
+            font-size: 1.2rem;
         }
 
-        .retry-button {
-            background: var(--error-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 0.875rem;
+        .status-banner .message {
+            flex: 1;
+        }
+
+        .status-banner .action-btn {
+            background: transparent;
+            border: 1px solid currentColor;
+            color: inherit;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
-            margin-top: 1rem;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        .retry-button:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
+        .status-banner .action-btn:hover {
+            background: currentColor;
+            color: white;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border-radius: 25px;
+            padding: 8px 16px;
+            box-shadow: var(--shadow);
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-status.connected {
+            color: var(--success-color);
+        }
+
+        .connection-status.disconnected {
+            color: var(--error-color);
+        }
+
+        .connection-status.loading {
+            color: var(--warning-color);
+        }
+
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* Summary Cards */
@@ -321,6 +405,7 @@
         .filter-group label {
             font-weight: 500;
             color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
         .filter-select {
@@ -331,6 +416,7 @@
             color: var(--text-primary);
             font-size: 14px;
             cursor: pointer;
+            min-width: 120px;
         }
 
         /* Tabs */
@@ -505,6 +591,33 @@
             margin-bottom: 1rem;
         }
 
+        /* Data Source Info */
+        .data-source {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-align: center;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .data-source a {
+            color: var(--blog-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .data-source a:hover {
+            text-decoration: underline;
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .container {
@@ -553,33 +666,25 @@
             .loading-content {
                 min-width: 280px;
                 margin: 1rem;
+                padding: 2rem;
+            }
+
+            .connection-status {
+                top: 10px;
+                right: 10px;
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+
+            .data-source {
+                flex-direction: column;
+                text-align: center;
             }
         }
 
-        /* Dark theme chart colors */
+        /* Dark theme adjustments */
         [data-theme="dark"] .chart-section canvas {
             filter: brightness(0.9);
-        }
-
-        /* Data source info */
-        .data-source {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-
-        .data-source a {
-            color: var(--blog-color);
-            text-decoration: none;
-        }
-
-        .data-source a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -588,9 +693,19 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <div class="loading-spinner"></div>
-            <div class="loading-text">데이터 불러오는 중...</div>
-            <div class="loading-subtext">구글 시트에서 최신 데이터를 가져오고 있습니다</div>
+            <div class="loading-text" id="loadingText">데이터 불러오는 중...</div>
+            <div class="loading-subtext" id="loadingSubtext">구글 시트에서 최신 데이터를 가져오고 있습니다</div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar" id="loadingProgressBar"></div>
+            </div>
+            <div class="loading-timeout" id="loadingTimeout">최대 10초까지 소요될 수 있습니다</div>
         </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="connection-status loading" id="connectionStatus">
+        <div class="connection-dot"></div>
+        <span id="connectionText">연결 중...</span>
     </div>
 
     <div class="container">
@@ -611,13 +726,8 @@
             </div>
         </div>
 
-        <!-- Error Message (initially hidden) -->
-        <div id="errorMessage" class="error-message" style="display: none;">
-            <div class="icon">⚠️</div>
-            <h3>데이터를 불러올 수 없습니다</h3>
-            <p id="errorText">네트워크 연결을 확인하고 다시 시도해주세요.</p>
-            <button class="retry-button" onclick="loadData()">다시 시도</button>
-        </div>
+        <!-- Status Banner (initially hidden) -->
+        <div id="statusBanner" style="display: none;"></div>
 
         <!-- Main Content -->
         <div id="mainContent">
@@ -693,8 +803,10 @@
 
             <!-- Data Source Info -->
             <div class="data-source">
-                📊 데이터 소스: <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v" target="_blank">구글 스프레드시트</a> 
-                | 마지막 업데이트: <span id="lastUpdate"></span>
+                <div>
+                    📊 데이터 소스: <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v" target="_blank">구글 스프레드시트</a>
+                </div>
+                <div>마지막 업데이트: <span id="lastUpdate">-</span></div>
             </div>
         </div>
     </div>
@@ -702,10 +814,14 @@
     <script>
         // Configuration
         const DEFAULT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZld2-FLleV-GvqjIma-51hpcVmperjx7LlAd79BnN-8Z7-NAoakyf3KVEqeYcaK6Ev83IMc6K7_v/pub?gid=0&single=true&output=csv';
+        const TIMEOUT_DURATION = 10000; // 10 seconds
+        const RETRY_ATTEMPTS = 3;
         
         let contentData = [];
         let currentPlatform = 'all';
         let chartInstance = null;
+        let loadingTimeout = null;
+        let currentAttempt = 0;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -714,7 +830,7 @@
             loadData();
         });
 
-        // Theme toggle
+        // Theme management
         function toggleTheme() {
             const body = document.body;
             const themeIcon = document.getElementById('theme-icon');
@@ -737,7 +853,6 @@
             }
         }
 
-        // Initialize theme from localStorage
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
@@ -747,138 +862,54 @@
             }
         }
 
-        // Show/Hide loading overlay
+        // Loading state management
         function showLoading() {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            document.getElementById('refreshButton').disabled = true;
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            document.getElementById('refreshButton').disabled = false;
-        }
-
-        // Show/Hide error message
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
-            errorText.textContent = message;
-            errorDiv.style.display = 'block';
-            document.getElementById('mainContent').style.opacity = '0.5';
-        }
-
-        function hideError() {
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('mainContent').style.opacity = '1';
-        }
-
-        // Data validation functions
-        function validateDate(dateStr) {
-            if (!dateStr || dateStr.trim() === '') return false;
-            const regex = /^\d{4}\.\d{2}\.\d{2}$/;
-            if (!regex.test(dateStr)) return false;
+            const overlay = document.getElementById('loadingOverlay');
+            const progressBar = document.getElementById('loadingProgressBar');
+            const loadingText = document.getElementById('loadingText');
+            const loadingSubtext = document.getElementById('loadingSubtext');
+            const connectionStatus = document.getElementById('connectionStatus');
+            const connectionText = document.getElementById('connectionText');
+            const refreshButton = document.getElementById('refreshButton');
             
-            const parts = dateStr.split('.');
-            const year = parseInt(parts[0]);
-            const month = parseInt(parts[1]);
-            const day = parseInt(parts[2]);
+            overlay.classList.remove('hidden');
+            refreshButton.disabled = true;
             
-            if (year < 2020 || year > 2030 || month < 1 || month > 12 || day < 1 || day > 31) {
-                return false;
-            }
+            // Update connection status
+            connectionStatus.className = 'connection-status loading';
+            connectionText.textContent = '데이터 로딩 중...';
             
-            const date = new Date(year, month - 1, day);
-            return date.getFullYear() === year && 
-                   date.getMonth() === month - 1 && 
-                   date.getDate() === day;
-        }
-
-        function validatePlatform(platform) {
-            const validPlatforms = ['블로그', '인스타', '페북'];
-            return validPlatforms.includes(platform);
-        }
-
-        function validateUrl(url) {
-            if (!url || url.trim() === '') return false;
-            try {
-                new URL(url);
-                return true;
-            } catch {
-                return false;
+            // Animate progress bar
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+            }, 200);
+            
+            // Set timeout
+            loadingTimeout = setTimeout(() => {
+                clearInterval(progressInterval);
+                handleTimeout();
+            }, TIMEOUT_DURATION);
+            
+            // Update loading text based on attempt
+            if (currentAttempt > 0) {
+                loadingText.textContent = `재시도 중... (${currentAttempt}/${RETRY_ATTEMPTS})`;
+                loadingSubtext.textContent = '연결 상태를 확인하고 있습니다';
             }
         }
 
-        // Load data from CSV
-        async function loadData() {
-            showLoading();
-            hideError();
-
-            try {
-                const response = await fetch(DEFAULT_CSV_URL);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const csvText = await response.text();
-                
-                Papa.parse(csvText, {
-                    header: false,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        try {
-                            processCSVData(results.data);
-                            hideLoading();
-                        } catch (error) {
-                            console.error('Data processing error:', error);
-                            showError('데이터 처리 중 오류가 발생했습니다.');
-                            hideLoading();
-                        }
-                    },
-                    error: function(error) {
-                        console.error('CSV parsing error:', error);
-                        showError('CSV 파싱 중 오류가 발생했습니다.');
-                        hideLoading();
-                    }
-                });
-                
-            } catch (error) {
-                console.error('Data loading error:', error);
-                let errorMessage = '데이터를 불러올 수 없습니다.';
-                
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
-                } else if (error.message.includes('HTTP')) {
-                    errorMessage = '데이터 소스에 접근할 수 없습니다. 구글 시트가 공개되어 있는지 확인해주세요.';
-                }
-                
-                showError(errorMessage);
-                hideLoading();
-            }
-        }
-
-        // Process CSV data
-        function processCSVData(rawData) {
-            if (!rawData || rawData.length === 0) {
-                throw new Error('데이터가 비어있습니다.');
-            }
-
-            const validData = [];
-            const errors = [];
+        function hideLoading(success = true) {
+            const overlay = document.getElementById('loadingOverlay');
+            const progressBar = document.getElementById('loadingProgressBar');
+            const connectionStatus = document.getElementById('connectionStatus');
+            const connectionText = document.getElementById('connectionText');
+            const refreshButton = document.getElementById('refreshButton');
             
-            // Skip header row if exists
-            const startRow = rawData[0] && rawData[0].length > 0 && 
-                           (rawData[0][0].includes('날짜') || rawData[0][0].includes('업로드')) ? 1 : 0;
+            if (loadingTimeout) {
+                clearTimeout(loadingTimeout);
+                loadingTimeout = null;
+            }
             
-            for (let i = startRow; i < rawData.length; i++) {
-                const row = rawData[i];
-                const rowNum = i + 1;
-                
-                if (!row || row.length < 4) {
-                    errors.push(`행 ${rowNum}: 데이터가 부족합니다 (4개 열 필요)`);
-                    continue;
-                }
-                
-                const [date, platform, subject, link] = row;
-                
-                // 모든 필드가 비어있으면 스킵
+            // Complete progress bar
